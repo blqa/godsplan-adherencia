@@ -75,13 +75,58 @@
             font-weight: 400;
         }
 
-        /* HEADER */
+        /* --- GLOBAL NAV (BARRA SUPERIOR UNIFICADA) --- */
+        #global-nav {
+            height: 40px;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+            flex-shrink: 0;
+            border-bottom: 1px solid #333;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .g-logo {
+            color: #fff;
+            font-weight: 900;
+            text-decoration: none;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .g-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .g-link {
+            color: #666;
+            text-decoration: none;
+            font-size: 0.75rem;
+            font-weight: 700;
+            transition: color 0.2s;
+        }
+
+        .g-link:hover,
+        .g-link.active {
+            color: #fff;
+        }
+
+        /* HEADER APP (AJUSTADO PARA NO CHOCAR CON NAV GLOBAL) */
         header {
             background: var(--card);
             border-bottom: 1px solid var(--border);
             padding: 15px;
             position: sticky;
-            top: 0;
+            top: 40px;
+            /* Se empuja 40px hacia abajo por el nav global */
             z-index: 50;
             display: flex;
             justify-content: space-between;
@@ -610,6 +655,31 @@
             border-color: #991b1b;
         }
 
+        /* TEAM LIST */
+        .team-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .team-row:last-child {
+            border-bottom: none;
+        }
+
+        .team-name {
+            font-weight: 700;
+            color: var(--text);
+            font-size: 0.9rem;
+        }
+
+        .team-hours {
+            font-weight: 800;
+            color: var(--brand);
+            font-family: var(--font-mono);
+        }
+
         /* UI & MODALS */
         .wa-float {
             position: fixed;
@@ -850,9 +920,21 @@
 
 <body>
 
+    <!-- NUEVA BARRA GLOBAL -->
+    <nav id="global-nav">
+        <a href="https://godsplan.site" class="g-logo"><i class="ph-bold ph-circles-three-plus"></i> God's Plan</a>
+        <div class="g-links">
+            <a href="#" class="g-link active">ADHERENCIA</a>
+            <a href="https://chat.godsplan.site" class="g-link">CHAT</a>
+            <a href="https://godsplan.site/proyectos" class="g-link">PROYECTOS</a>
+        </div>
+    </nav>
+
     <header>
-        <div class="header-title"><i class="ph-fill ph-check-circle" style="color:var(--brand)"></i> God's Plan</div>
+        <div class="header-title"><i class="ph-fill ph-check-circle" style="color:var(--brand)"></i> Adherencia</div>
         <div class="nav-group">
+            <button class="btn-reset" onclick="app.loadTeamStatsModal()" title="Equipo"><i
+                    class="ph-bold ph-users"></i></button>
             <button class="btn-reset" onclick="app.syncData()" title="Sincronizar"><i
                     class="ph-bold ph-arrows-clockwise"></i></button>
             <button class="btn-reset" onclick="app.openConfigModal()" title="Menú"><i
@@ -1124,6 +1206,22 @@
                 onclick="document.getElementById('importModal').classList.remove('active')">Cancelar</button>
         </div>
     </div>
+    <div class="modal" id="teamModal">
+        <div class="modal-content">
+            <h3 style="text-align:center; margin-bottom:15px; color:var(--brand);">🏆 Reporte de Equipo</h3>
+            <p style="font-size:0.8rem; color:var(--text-mute); margin-bottom:10px;">Horas netas trabajadas en la semana
+                actual por cada usuario con registro.</p>
+            <div id="teamLoader" style="text-align:center; padding:15px;"><i class="ph-bold ph-circle-notch"
+                    style="animation: spin 1s linear infinite; font-size:1.5rem; color:var(--brand);"></i> Cargando...
+            </div>
+            <div id="teamList"
+                style="max-height:300px; overflow-y:auto; border:1px solid var(--border); border-radius:8px; margin-bottom:15px;">
+                <!-- Lista inyectada por JS -->
+            </div>
+            <button class="btn-secondary"
+                onclick="document.getElementById('teamModal').classList.remove('active')">Cerrar</button>
+        </div>
+    </div>
     <div class="modal" id="dateJumpModal">
         <div class="modal-content">
             <h3>Ir a Fecha</h3><input type="date" id="inpJumpDate"><button class="btn-primary"
@@ -1189,9 +1287,8 @@
                     if (cc) this.applyCustomColors(cc);
                 }
 
-                // Toggle header icon functionality (cycle) is now removed in favor of modal, or repurposed
-                // We'll keep the header moon icon as a quick toggle between light/dark/red cycle?
-                // Or remove it. Let's keep it cycling for quick access.
+                // Rerender charts to update colors
+                if (this.data.logs.length > 0) this.renderCharts(this.data.logs.filter(l => new Date(l.date + 'T00:00').getMonth() === this.date.getMonth()));
             },
 
             toggleTheme() {
@@ -1247,6 +1344,94 @@
                 if (!this.offline && this.userId) await db.collection("godsPlanData").doc(this.userId).set(this.data);
             },
             syncData() { this.load(); this.showSuccess("Sincronizado"); },
+
+            // --- TEAM STATS LOGIC ---
+            loadTeamStatsModal() {
+                document.getElementById('teamModal').classList.add('active');
+                this.loadTeamStats();
+            },
+
+            async loadTeamStats() {
+                const loader = document.getElementById('teamLoader');
+                const list = document.getElementById('teamList');
+                loader.style.display = 'block';
+                list.innerHTML = '';
+
+                try {
+                    // Fetch all user data
+                    const snap = await db.collection("godsPlanData").get();
+                    let teamData = [];
+                    const d = new Date();
+                    const currentWeek = this.getWeek(d);
+                    const currentYear = d.getFullYear();
+
+                    snap.forEach(doc => {
+                        const uData = doc.data();
+                        const logs = uData.logs || [];
+                        const config = uData.config || {};
+
+                        // 1. Filter Logs for current week
+                        const wLogs = logs.filter(l => this.getWeek(new Date(l.date + 'T00:00')) === currentWeek && new Date(l.date).getFullYear() === currentYear);
+
+                        // Skip if user has no data for the week OR if it's an anonymous user without logs
+                        if (wLogs.length === 0) return;
+
+                        // 2. Calculate Hours
+                        let totalMins = 0;
+                        wLogs.forEach(l => {
+                            if (l.type === 'Laboral' || l.type === 'Descanso') {
+                                totalMins += (l.hours - (l.disconnection || 0));
+                            }
+                        });
+
+                        // If total work is 0 or less, skip showing them in the leaderboard
+                        if (totalMins <= 0) return;
+
+                        // 3. Name Resolution
+                        let name = "Sin Nombre";
+                        const authUser = auth.currentUser;
+
+                        if (config.empName) {
+                            name = config.empName;
+                        } else if (doc.id.includes('@godsplan.local')) {
+                            // User signed up with ID/Pass
+                            name = `ID ${doc.id.split('@')[0]}`;
+                        } else if (authUser && authUser.displayName) {
+                            // Google Auth Name
+                            name = authUser.displayName;
+                        } else if (authUser && authUser.email) {
+                            // Google Auth Email
+                            name = authUser.email;
+                        }
+
+                        // Fallback to UID if no name found
+                        if (name === "Sin Nombre" || name.includes("@")) {
+                            name = doc.id.slice(0, 8);
+                        }
+
+                        teamData.push({ name, mins: totalMins });
+                    });
+
+                    teamData.sort((a, b) => b.mins - a.mins);
+
+                    if (teamData.length === 0) {
+                        list.innerHTML = '<div style="padding:15px; text-align:center; color:var(--text-mute);">Nadie ha registrado horas esta semana.</div>';
+                    } else {
+                        teamData.forEach(member => {
+                            const row = document.createElement('div');
+                            row.className = 'team-row';
+                            row.innerHTML = `<div class="team-name">${member.name}</div><div class="team-hours">${this.fmt(member.mins)}</div>`;
+                            list.appendChild(row);
+                        });
+                    }
+
+                } catch (e) {
+                    console.error("Error loading team:", e);
+                    this.showMessage("Error al cargar: Revisa reglas de Firebase. " + e.message);
+                    list.innerHTML = '<div style="padding:15px; text-align:center; color:var(--alert);">Error al cargar: Revisa reglas de Firebase.</div>';
+                }
+                loader.style.display = 'none';
+            },
 
             // RELOJ
             uiClock() {
@@ -1520,7 +1705,9 @@
             processImport() { const t = document.getElementById('importTextArea').value; if (!t) return; const l = t.split('\n'); let c = 0; l.forEach(x => { const p = x.split(/[\t,]+/); if (p.length >= 4) { this.data.logs.push({ id: Date.now() + c, date: p[0], type: p[1], in: p[2], out: p[3], hours: this.calcHours(p[2], p[3]), disconnection: 0 }); c++; } }); this.save(); document.getElementById('importModal').classList.remove('active'); this.showSuccess(c + " importados"); },
             exportBackup() { const a = document.createElement('a'); a.href = 'data:application/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(this.data)); a.download = 'backup.json'; a.click(); },
 
-            calcHours(i, o) { if (!i || !o) return 0; const [h1, m1] = i.split(':'), [h2, m2] = o.split(':'); const d = ((h2 * 60 + +m2) - (h1 * 60 + +m1)); return d < 0 ? -1 : d; }
+            calcHours(i, o) { if (!i || !o) return 0; const [h1, m1] = i.split(':'), [h2, m2] = o.split(':'); const d = ((h2 * 60 + +m2) - (h1 * 60 + +m1)); return d < 0 ? -1 : d; },
+
+            toggleLoader(s) { document.getElementById('mainLoader').style.display = s ? 'flex' : 'none'; }
         };
         document.addEventListener('DOMContentLoaded', () => app.init());
     </script>
