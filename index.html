@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>God's Plan | Adherencia</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <!-- FUENTE UNIFICADA: PLUS JAKARTA SANS -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -61,7 +62,7 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Inter', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif; /* FUENTE ACTUALIZADA */
             -webkit-tap-highlight-color: transparent;
             outline: none;
             transition: background-color 0.3s, color 0.3s, border-color 0.3s;
@@ -75,16 +76,16 @@
             font-weight: 400;
         }
 
-        /* --- GLOBAL NAV (BARRA SUPERIOR UNIFICADA) --- */
+        /* --- GLOBAL NAV (ESTILO ECOSISTEMA UNIFICADO) --- */
         #global-nav {
-            height: 40px;
-            background: #000;
+            height: 56px; /* Altura estándar h-14 */
+            background: #000000;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 15px;
+            padding: 0 20px;
             flex-shrink: 0;
-            border-bottom: 1px solid #333;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
             position: sticky;
             top: 0;
             z-index: 100;
@@ -94,29 +95,46 @@
             color: #fff;
             font-weight: 900;
             text-decoration: none;
-            font-size: 0.8rem;
-            letter-spacing: 1px;
+            font-size: 1rem;
+            letter-spacing: 0.5px;
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 8px;
         }
+        
+        .g-logo:hover { color: #ef4444; transition: color 0.3s; }
 
         .g-links {
             display: flex;
-            gap: 15px;
+            align-items: center;
+            gap: 20px;
         }
 
         .g-link {
-            color: #666;
+            color: #71717a; /* zinc-500 */
             text-decoration: none;
-            font-size: 0.75rem;
+            font-size: 10px; /* text-[10px] */
             font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em; /* tracking-wider */
             transition: color 0.2s;
         }
 
-        .g-link:hover,
+        .g-link:hover { color: #fff; }
+        
         .g-link.active {
             color: #fff;
+            border-bottom: 2px solid #fff;
+            padding-bottom: 2px;
+        }
+
+        #syncStatus {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: #10b981; /* emerald-500 */
+            box-shadow: 0 0 8px rgba(16,185,129,0.5);
+            margin-left: 5px;
         }
 
         /* HEADER APP (AJUSTADO PARA NO CHOCAR CON NAV GLOBAL) */
@@ -125,8 +143,7 @@
             border-bottom: 1px solid var(--border);
             padding: 15px;
             position: sticky;
-            top: 40px;
-            /* Se empuja 40px hacia abajo por el nav global */
+            top: 56px; /* Ajustado a la nueva altura del nav global */
             z-index: 50;
             display: flex;
             justify-content: space-between;
@@ -267,7 +284,7 @@
         }
 
         .side-val {
-            font-family: var(--font-mono);
+            font-family: monospace; /* Fallback for mono numbers */
             font-weight: 700;
             font-size: 1rem;
             color: var(--text);
@@ -677,7 +694,7 @@
         .team-hours {
             font-weight: 800;
             color: var(--brand);
-            font-family: var(--font-mono);
+            font-family: monospace;
         }
 
         /* UI & MODALS */
@@ -722,7 +739,7 @@
             padding: 10px;
             border-radius: 8px;
             margin-bottom: 10px;
-            font-family: 'Inter', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             font-weight: 600;
             color: var(--text);
         }
@@ -920,13 +937,15 @@
 
 <body>
 
-    <!-- NUEVA BARRA GLOBAL -->
+    <!-- NAV GLOBAL UNIFICADA -->
     <nav id="global-nav">
         <a href="https://godsplan.site" class="g-logo"><i class="ph-bold ph-circles-three-plus"></i> God's Plan</a>
         <div class="g-links">
             <a href="#" class="g-link active">ADHERENCIA</a>
+            <a href="https://auth.godsplan.site" class="g-link">AUTH</a>
             <a href="https://chat.godsplan.site" class="g-link">CHAT</a>
-            <a href="https://godsplan.site/proyectos" class="g-link">PROYECTOS</a>
+            <a href="https://finanzas.godsplan.site" class="g-link">FINANZAS</a>
+            <div id="syncStatus" title="Sistema Online"></div>
         </div>
     </nav>
 
@@ -1238,7 +1257,14 @@
         function showGlobalError(m) { const x = document.getElementById('msgModal'); if (x) { document.getElementById('msgText').textContent = m; document.getElementById('msgIcon').className = 'ph-fill ph-warning-circle'; document.getElementById('msgIcon').style.color = 'var(--alert)'; x.classList.add('active'); } else alert(m); }
         window.onerror = function (m) { if (!String(m).includes('popup')) showGlobalError(m); };
 
-        try { firebase.initializeApp(firebaseConfig); auth = firebase.auth(); db = firebase.firestore(); } catch (e) { setTimeout(() => showGlobalError(e.message), 1000); }
+        try { 
+            firebase.initializeApp(firebaseConfig); 
+            auth = firebase.auth(); 
+            db = firebase.firestore(); 
+            // MEJORA: Persistencia local
+            auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+                .catch(err => console.error("Persistence Error", err));
+        } catch (e) { setTimeout(() => showGlobalError(e.message), 1000); }
 
         const app = {
             data: { logs: [], config: { rate1: 50, rate2: 75, bathAllow: 15, foodAllow: 45, empId: "", empName: "" }, activeShift: null },
@@ -1714,4 +1740,3 @@
 </body>
 
 </html>
-
