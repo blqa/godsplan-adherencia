@@ -10,10 +10,18 @@
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <!-- FIREBASE COMPAT -->
-    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js"></script>
+    <!-- FIREBASE MODULAR (v9+) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        window.firebaseImports = {
+            initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut,
+            GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile,
+            getFirestore, doc, getDoc, setDoc, collection, getDocs, query, where
+        };
+    </script>
 
     <style>
         :root {
@@ -943,7 +951,7 @@
         <div class="g-links">
             <a href="#" class="g-link active">ADHERENCIA</a>
             <a href="https://auth.godsplan.site" class="g-link">AUTH</a>
-            <a href="https://chat.godsplan.site" class="g-link">CHAT</a>
+            <a href="https://cuenta.godsplan.site" class="g-link">CUENTA</a>
             <a href="https://finanzas.godsplan.site" class="g-link">FINANZAS</a>
             <div id="syncStatus" title="Sistema Online"></div>
         </div>
@@ -1155,7 +1163,7 @@
             <h3 id="authTitle" style="text-align:center; margin-bottom:15px;">Acceso</h3>
             <div id="registerFields" style="display:none;"><label class="form-label">Nombre</label><input type="text"
                     id="regName"></div>
-            <label class="form-label">ID Empleado</label><input type="number" id="authId">
+            <label class="form-label">ID Empleado / Correo</label><input type="text" id="authId">
             <label class="form-label">Contraseña</label><input type="password" id="authPass">
             <button class="btn-primary" onclick="app.processAuth()">Continuar</button>
             <button class="btn-secondary"
@@ -1250,20 +1258,25 @@
     </div>
 
     <script>
+        const { initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, getFirestore, doc, getDoc, setDoc, collection, getDocs, query, where } = window.firebaseImports;
+
         const EMPLOYEES = { "17620": "Luis Ortiz", "1001": "Nadia", "9999": "Admin" };
-        const firebaseConfig = { apiKey: "AIzaSyCrHBz94UtgiaYntHCYhC5jNa6auUI63vQ", authDomain: "god-s-plan-d737b.firebaseapp.com", projectId: "god-s-plan-d737b", storageBucket: "god-s-plan-d737b.firebasestorage.app", messagingSenderId: "458198314028", appId: "1:458198314028:web:d62b24cee2d19ee5b47589" };
+        
+        // --- CONFIGURACIÓN ROBUSTA (Igual que en Finanzas/Cuenta) ---
+        const fallbackConfig = { apiKey: "AIzaSyCrHBz94UtgiaYntHCYhC5jNa6auUI63vQ", authDomain: "god-s-plan-d737b.firebaseapp.com", projectId: "god-s-plan-d737b", storageBucket: "god-s-plan-d737b.firebasestorage.app", messagingSenderId: "458198314028", appId: "1:458198314028:web:d62b24cee2d19ee5b47589" };
+        let firebaseConfig = fallbackConfig;
+        try { if (typeof __firebase_config !== 'undefined' && __firebase_config) { const envConfig = typeof __firebase_config === 'string' ? JSON.parse(__firebase_config) : __firebase_config; if (envConfig && envConfig.apiKey) firebaseConfig = envConfig; } } catch(e) { console.error(e); }
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        // -----------------------------------------------------------
 
         let auth, db, chartD, chartT;
         function showGlobalError(m) { const x = document.getElementById('msgModal'); if (x) { document.getElementById('msgText').textContent = m; document.getElementById('msgIcon').className = 'ph-fill ph-warning-circle'; document.getElementById('msgIcon').style.color = 'var(--alert)'; x.classList.add('active'); } else alert(m); }
         window.onerror = function (m) { if (!String(m).includes('popup')) showGlobalError(m); };
 
         try { 
-            firebase.initializeApp(firebaseConfig); 
-            auth = firebase.auth(); 
-            db = firebase.firestore(); 
-            // MEJORA: Persistencia local
-            auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
-                .catch(err => console.error("Persistence Error", err));
+            const fbApp = initializeApp(firebaseConfig); 
+            auth = getAuth(fbApp); 
+            db = getFirestore(fbApp); 
         } catch (e) { setTimeout(() => showGlobalError(e.message), 1000); }
 
         const app = {
@@ -1281,9 +1294,20 @@
                 if (customColors) this.applyCustomColors(customColors);
 
                 if (!auth) return this.goOffline();
-                auth.onAuthStateChanged(async u => {
-                    if (u) { this.userId = u.uid; this.offline = false; this.renderAuth(u); await this.load(); }
-                    else auth.signInAnonymously().catch(() => this.goOffline());
+
+                onAuthStateChanged(auth, async u => {
+                    if (u) { 
+                        this.userId = u.uid; 
+                        this.offline = false; 
+                        this.renderAuth(u); 
+                        await this.load(); 
+                    } else {
+                        // Intentar login automático con token del entorno si existe
+                        if (initialAuthToken) {
+                            try { await signInWithCustomToken(auth, initialAuthToken); return; } catch(e){}
+                        }
+                        await signInAnonymously(auth).catch(() => this.goOffline());
+                    }
                 });
                 this.loadLocal();
             },
@@ -1351,27 +1375,46 @@
             goOffline() { this.offline = true; document.getElementById('auth-status').innerHTML = `<i class="ph-bold ph-wifi-slash"></i> Offline`; this.loadLocal(); },
             renderAuth(u) {
                 let t = u.isAnonymous ? "Local" : (this.data.config.empName || u.displayName || "Usuario");
+                // Mostrar ID si es un login por ID
+                if (!u.isAnonymous && u.email && u.email.includes('@godsplan.site')) {
+                    t = u.email.split('@')[0];
+                }
                 document.getElementById('auth-status').innerHTML = `<i class="ph-fill ph-user-circle"></i> ${t}`;
                 document.getElementById('userProfile').textContent = t;
             },
 
             loadLocal() { const d = localStorage.getItem('godsPlanData'); if (d) { try { this.data = JSON.parse(d); this.render(); this.uiClock(); } catch (e) { } } },
+            
+            // MODULAR FIRESTORE LOAD
             async load() {
                 if (this.offline || !this.userId) return;
                 try {
-                    const s = await db.collection("godsPlanData").doc(this.userId).get();
-                    if (s.exists) { this.data = s.data(); this.data.logs = this.data.logs || []; }
-                    else if (auth.currentUser.isAnonymous) { const l = localStorage.getItem('godsPlanData'); if (l) { this.data = JSON.parse(l); this.save(); } }
+                    // Mantenemos la colección godsPlanData para compatibilidad
+                    const docRef = doc(db, "godsPlanData", this.userId);
+                    const snap = await getDoc(docRef);
+                    
+                    if (snap.exists()) { 
+                        this.data = snap.data(); 
+                        this.data.logs = this.data.logs || []; 
+                    } else if (auth.currentUser.isAnonymous) { 
+                        const l = localStorage.getItem('godsPlanData'); 
+                        if (l) { this.data = JSON.parse(l); this.save(); } 
+                    }
                     this.render(); this.uiClock();
                 } catch (e) { console.error(e); }
             },
+            
+            // MODULAR FIRESTORE SAVE
             async save() {
                 localStorage.setItem('godsPlanData', JSON.stringify(this.data));
-                if (!this.offline && this.userId) await db.collection("godsPlanData").doc(this.userId).set(this.data);
+                if (!this.offline && this.userId) {
+                    const docRef = doc(db, "godsPlanData", this.userId);
+                    await setDoc(docRef, this.data);
+                }
             },
             syncData() { this.load(); this.showSuccess("Sincronizado"); },
 
-            // --- TEAM STATS LOGIC ---
+            // --- TEAM STATS LOGIC (MODULAR) ---
             loadTeamStatsModal() {
                 document.getElementById('teamModal').classList.add('active');
                 this.loadTeamStats();
@@ -1384,25 +1427,24 @@
                 list.innerHTML = '';
 
                 try {
-                    // Fetch all user data
-                    const snap = await db.collection("godsPlanData").get();
+                    // Fetch all user data using Modular SDK
+                    const q = collection(db, "godsPlanData");
+                    const snap = await getDocs(q);
+                    
                     let teamData = [];
                     const d = new Date();
                     const currentWeek = this.getWeek(d);
                     const currentYear = d.getFullYear();
 
-                    snap.forEach(doc => {
-                        const uData = doc.data();
+                    snap.forEach(docSnap => {
+                        const uData = docSnap.data();
                         const logs = uData.logs || [];
                         const config = uData.config || {};
 
-                        // 1. Filter Logs for current week
                         const wLogs = logs.filter(l => this.getWeek(new Date(l.date + 'T00:00')) === currentWeek && new Date(l.date).getFullYear() === currentYear);
 
-                        // Skip if user has no data for the week OR if it's an anonymous user without logs
                         if (wLogs.length === 0) return;
 
-                        // 2. Calculate Hours
                         let totalMins = 0;
                         wLogs.forEach(l => {
                             if (l.type === 'Laboral' || l.type === 'Descanso') {
@@ -1410,29 +1452,18 @@
                             }
                         });
 
-                        // If total work is 0 or less, skip showing them in the leaderboard
                         if (totalMins <= 0) return;
 
-                        // 3. Name Resolution
                         let name = "Sin Nombre";
-                        const authUser = auth.currentUser;
-
+                        
                         if (config.empName) {
                             name = config.empName;
-                        } else if (doc.id.includes('@godsplan.local')) {
-                            // User signed up with ID/Pass
-                            name = `ID ${doc.id.split('@')[0]}`;
-                        } else if (authUser && authUser.displayName) {
-                            // Google Auth Name
-                            name = authUser.displayName;
-                        } else if (authUser && authUser.email) {
-                            // Google Auth Email
-                            name = authUser.email;
-                        }
-
-                        // Fallback to UID if no name found
-                        if (name === "Sin Nombre" || name.includes("@")) {
-                            name = doc.id.slice(0, 8);
+                        } else if (docSnap.id.includes('@')) {
+                             // Si el ID del documento parece un email
+                             name = docSnap.id.split('@')[0];
+                        } else {
+                            // Fallback
+                            name = docSnap.id.slice(0, 8);
                         }
 
                         teamData.push({ name, mins: totalMins });
@@ -1684,9 +1715,32 @@
             switchTab(id) { document.querySelectorAll('.tab').forEach(t => t.classList.remove('active')); document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); event.target.classList.add('active'); document.getElementById(id).classList.add('active'); },
             lookupEmployee() { const id = document.getElementById('cfgEmpId').value; const n = EMPLOYEES[id]; const d = document.getElementById('employeeNameDisplay'); if (n) { d.textContent = "Hola, " + n; this.data.config.empId = id; this.data.config.empName = n; } else d.textContent = "No encontrado"; },
             openAuthModal(m) { this.authMode = m; document.getElementById('configModal').classList.remove('active'); document.getElementById('authModal').classList.add('active'); document.getElementById('authTitle').textContent = m === 'login' ? 'Entrar' : 'Registro'; document.getElementById('registerFields').style.display = m === 'register' ? 'block' : 'none'; },
-            async processAuth() { const id = document.getElementById('authId').value, p = document.getElementById('authPass').value, e = `${id}@godsplan.local`; try { if (this.authMode === 'register') { const n = document.getElementById('regName').value; const r = await auth.createUserWithEmailAndPassword(e, p); await r.user.updateProfile({ displayName: n }); } else await auth.signInWithEmailAndPassword(e, p); document.getElementById('authModal').classList.remove('active'); } catch (err) { this.showMessage(err.message); } },
-            async loginWithGoogle() { try { await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); document.getElementById('configModal').classList.remove('active'); } catch (e) { this.showMessage(e.message); } },
-            logout() { auth.signOut(); location.reload(); },
+            
+            // --- UPDATED AUTH PROCESS (UNIFIED) ---
+            async processAuth() { 
+                const id = document.getElementById('authId').value.trim();
+                const p = document.getElementById('authPass').value;
+                
+                // Unify: If no @, assume it's an ID and append fake domain
+                let e = id;
+                if (!e.includes('@')) {
+                    e = `${id}@godsplan.site`;
+                }
+
+                try { 
+                    if (this.authMode === 'register') { 
+                        const n = document.getElementById('regName').value; 
+                        const r = await createUserWithEmailAndPassword(auth, e, p); 
+                        await updateProfile(r.user, { displayName: n }); 
+                    } else {
+                        await signInWithEmailAndPassword(auth, e, p); 
+                    }
+                    document.getElementById('authModal').classList.remove('active'); 
+                } catch (err) { this.showMessage(err.message); } 
+            },
+            
+            async loginWithGoogle() { try { await signInWithPopup(auth, new GoogleAuthProvider()); document.getElementById('configModal').classList.remove('active'); } catch (e) { this.showMessage(e.message); } },
+            logout() { signOut(auth).then(() => location.reload()); },
             resetData() { if (confirm("¿Borrar todo?")) { this.data = { logs: [], config: this.data.config, activeShift: null }; this.save(); location.reload(); } },
 
             openModal(id = null) {
