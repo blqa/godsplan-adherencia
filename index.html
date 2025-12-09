@@ -960,17 +960,17 @@
     <header>
         <div class="header-title"><i class="ph-fill ph-check-circle" style="color:var(--brand)"></i> Adherencia</div>
         <div class="nav-group">
-            <button class="btn-reset" onclick="app.loadTeamStatsModal()" title="Equipo"><i
+            <button class="btn-reset" onclick="window.app.loadTeamStatsModal()" title="Equipo"><i
                     class="ph-bold ph-users"></i></button>
-            <button class="btn-reset" onclick="app.syncData()" title="Sincronizar"><i
+            <button class="btn-reset" onclick="window.app.syncData()" title="Sincronizar"><i
                     class="ph-bold ph-arrows-clockwise"></i></button>
-            <button class="btn-reset" onclick="app.openConfigModal()" title="Menú"><i
+            <button class="btn-reset" onclick="window.app.openConfigModal()" title="Menú"><i
                     class="ph-bold ph-list"></i></button>
             <div class="month-nav">
-                <button class="nav-btn" onclick="app.changeMonth(-1)"><i class="ph-bold ph-caret-left"></i></button>
+                <button class="nav-btn" onclick="window.app.changeMonth(-1)"><i class="ph-bold ph-caret-left"></i></button>
                 <span class="month-label" id="monthLabel">--</span>
-                <button class="nav-btn" onclick="app.changeMonth(1)"><i class="ph-bold ph-caret-right"></i></button>
-                <button class="nav-btn btn-today" onclick="app.goToday()"><i
+                <button class="nav-btn" onclick="window.app.changeMonth(1)"><i class="ph-bold ph-caret-right"></i></button>
+                <button class="nav-btn btn-today" onclick="window.app.goToday()"><i
                         class="ph-bold ph-calendar-check"></i></button>
             </div>
         </div>
@@ -1012,10 +1012,10 @@
             <div class="kpi-card">
                 <div class="kpi-header">
                     <div class="kpi-title-group">
-                        <button class="mini-nav-btn" onclick="app.changeWeek(-1)"><i
+                        <button class="mini-nav-btn" onclick="window.app.changeWeek(-1)"><i
                                 class="ph-bold ph-caret-left"></i></button>
                         <span class="kpi-title">Semana <span id="weekNum">--</span></span>
-                        <button class="mini-nav-btn" onclick="app.changeWeek(1)"><i
+                        <button class="mini-nav-btn" onclick="window.app.changeWeek(1)"><i
                                 class="ph-bold ph-caret-right"></i></button>
                     </div>
                     <span id="weekBalance" class="balance-badge">0h</span>
@@ -1043,7 +1043,7 @@
 
         <!-- LISTA -->
         <div class="log-section">
-            <div class="log-header"><span id="logListTitle">HISTORIAL</span><button onclick="app.openModal()"
+            <div class="log-header"><span id="logListTitle">HISTORIAL</span><button onclick="window.app.openModal()"
                     style="border:none; background:none; color:var(--brand); font-weight:800; cursor:pointer;">+
                     MANUAL</button></div>
             <div id="logList"></div>
@@ -1073,36 +1073,36 @@
         <div class="modal-content">
             <h3 style="text-align:center; margin-bottom:15px;">Configuración</h3>
             <div class="tabs">
-                <div class="tab active" onclick="app.switchTab('tAccount')">Cuenta</div>
-                <div class="tab" onclick="app.switchTab('tDesign')">Diseño</div>
-                <div class="tab" onclick="app.switchTab('tSettings')">Ajustes</div>
-                <div class="tab" onclick="app.switchTab('tData')">Datos</div>
+                <div class="tab active" onclick="window.app.switchTab('tAccount')">Cuenta</div>
+                <div class="tab" onclick="window.app.switchTab('tDesign')">Diseño</div>
+                <div class="tab" onclick="window.app.switchTab('tSettings')">Ajustes</div>
+                <div class="tab" onclick="window.app.switchTab('tData')">Datos</div>
             </div>
 
             <div id="tAccount" class="tab-content active">
                 <div
                     style="background:var(--bg); padding:10px; border-radius:8px; margin-bottom:15px; border:1px solid var(--border);">
                     <div id="userProfile" style="font-weight:700; margin-bottom:5px;">...</div>
-                    <button class="btn-secondary" onclick="app.logout()" style="padding:8px;">Cerrar Sesión</button>
+                    <button class="btn-secondary" onclick="window.app.logout()" style="padding:8px;">Cerrar Sesión</button>
                 </div>
-                <button class="btn-primary" style="background:#0f172a;" onclick="app.openAuthModal('login')">Ingresar
+                <button class="btn-primary" style="background:#0f172a;" onclick="window.app.openAuthModal('login')">Ingresar
                     con ID</button>
-                <button class="btn-primary" style="background:#4285F4;" onclick="app.loginWithGoogle()">Ingresar con
+                <button class="btn-primary" style="background:#4285F4;" onclick="window.app.loginWithGoogle()">Ingresar con
                     Google</button>
-                <button class="btn-secondary" onclick="app.openAuthModal('register')">Crear Cuenta (ID)</button>
+                <button class="btn-secondary" onclick="window.app.openAuthModal('register')">Crear Cuenta (ID)</button>
             </div>
 
             <div id="tDesign" class="tab-content">
                 <p style="font-size:0.7rem; font-weight:700; color:var(--text-mute); margin-bottom:10px;">TEMA DE LA APP
                 </p>
                 <div class="theme-grid">
-                    <button class="theme-btn" id="btnThemeLight" onclick="app.setTheme('light')"><i
+                    <button class="theme-btn" id="btnThemeLight" onclick="window.app.setTheme('light')"><i
                             class="ph-bold ph-sun"></i> Claro</button>
-                    <button class="theme-btn" id="btnThemeDark" onclick="app.setTheme('dark')"><i
+                    <button class="theme-btn" id="btnThemeDark" onclick="window.app.setTheme('dark')"><i
                             class="ph-bold ph-moon"></i> Oscuro</button>
-                    <button class="theme-btn" id="btnThemeRed" onclick="app.setTheme('red')"><i
+                    <button class="theme-btn" id="btnThemeRed" onclick="window.app.setTheme('red')"><i
                             class="ph-bold ph-fire"></i> Red Core</button>
-                    <button class="theme-btn" id="btnThemeCustom" onclick="app.setTheme('custom')"><i
+                    <button class="theme-btn" id="btnThemeCustom" onclick="window.app.setTheme('custom')"><i
                             class="ph-bold ph-palette"></i> Custom</button>
                 </div>
 
@@ -1110,13 +1110,13 @@
                     style="display:none; background:var(--bg); padding:10px; border-radius:8px; border:1px solid var(--border);">
                     <p style="font-size:0.7rem; font-weight:700; margin-bottom:10px;">COLORES PERSONALIZADOS</p>
                     <div class="color-picker-row"><span>Fondo (BG)</span> <input type="color" id="ccBg"
-                            class="color-input" onchange="app.updateCustomTheme()"></div>
+                            class="color-input" onchange="window.app.updateCustomTheme()"></div>
                     <div class="color-picker-row"><span>Tarjetas</span> <input type="color" id="ccCard"
-                            class="color-input" onchange="app.updateCustomTheme()"></div>
+                            class="color-input" onchange="window.app.updateCustomTheme()"></div>
                     <div class="color-picker-row"><span>Texto</span> <input type="color" id="ccText" class="color-input"
-                            onchange="app.updateCustomTheme()"></div>
+                            onchange="window.app.updateCustomTheme()"></div>
                     <div class="color-picker-row"><span>Marca (Brand)</span> <input type="color" id="ccBrand"
-                            class="color-input" onchange="app.updateCustomTheme()"></div>
+                            class="color-input" onchange="window.app.updateCustomTheme()"></div>
                 </div>
             </div>
 
@@ -1134,7 +1134,7 @@
                 <p style="font-size:0.7rem; font-weight:700; color:#0369a1; margin:10px 0 5px;">ID EMPLEADO</p>
                 <div style="display:flex; gap:5px;">
                     <input type="text" id="cfgEmpId" placeholder="Ej. 17620" style="margin:0;">
-                    <button class="btn-primary" onclick="app.lookupEmployee()" style="width:auto; margin:0;"><i
+                    <button class="btn-primary" onclick="window.app.lookupEmployee()" style="width:auto; margin:0;"><i
                             class="ph-bold ph-check"></i></button>
                 </div>
                 <div id="employeeNameDisplay"
@@ -1142,15 +1142,15 @@
             </div>
 
             <div id="tData" class="tab-content">
-                <button class="btn-primary" style="background:var(--brand);" onclick="app.openImportModal()">Importar
+                <button class="btn-primary" style="background:var(--brand);" onclick="window.app.openImportModal()">Importar
                     Excel</button>
-                <button class="btn-secondary" onclick="app.exportBackup()">Descargar Backup</button>
+                <button class="btn-secondary" onclick="window.app.exportBackup()">Descargar Backup</button>
                 <div style="border-top:1px solid var(--border); margin:15px 0;"></div>
-                <button class="btn-delete" onclick="app.resetData()">Borrar Todo y Reiniciar</button>
+                <button class="btn-delete" onclick="window.app.resetData()">Borrar Todo y Reiniciar</button>
             </div>
 
             <div style="margin-top:15px; display:flex; gap:10px;">
-                <button class="btn-primary" onclick="app.saveConfig()">Guardar Cambios</button>
+                <button class="btn-primary" onclick="window.app.saveConfig()">Guardar Cambios</button>
                 <button class="btn-secondary"
                     onclick="document.getElementById('configModal').classList.remove('active')">Cerrar</button>
             </div>
@@ -1165,7 +1165,7 @@
                     id="regName"></div>
             <label class="form-label">ID Empleado / Correo</label><input type="text" id="authId">
             <label class="form-label">Contraseña</label><input type="password" id="authPass">
-            <button class="btn-primary" onclick="app.processAuth()">Continuar</button>
+            <button class="btn-primary" onclick="window.app.processAuth()">Continuar</button>
             <button class="btn-secondary"
                 onclick="document.getElementById('authModal').classList.remove('active')">Cancelar</button>
         </div>
@@ -1176,7 +1176,7 @@
         <div class="modal-content">
             <h3>Registro Manual</h3>
             <label class="form-label">Fecha</label><input type="date" id="inpDate">
-            <label class="form-label">Tipo</label><select id="inpType" onchange="app.toggleTimeInputs()">
+            <label class="form-label">Tipo</label><select id="inpType" onchange="window.app.toggleTimeInputs()">
                 <option value="Laboral">Laboral</option>
                 <option value="Descanso">Descanso</option>
                 <option value="Falta">Falta</option>
@@ -1185,24 +1185,24 @@
             <div id="timeInputs">
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
                     <div><label class="form-label">Entrada</label><input type="time" id="inpIn"
-                            onchange="app.calcPreview()"></div>
+                            onchange="window.app.calcPreview()"></div>
                     <div><label class="form-label">Salida</label><input type="time" id="inpOut"
-                            onchange="app.calcPreview()"></div>
+                            onchange="window.app.calcPreview()"></div>
                 </div>
                 <div
                     style="background:var(--bg); padding:10px; border-radius:8px; margin-bottom:10px; border:1px solid var(--border);">
                     <label class="form-label">Minutos Reales:</label>
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
                         <div><label class="form-label">Baño</label><input type="number" id="inpBathTime" value="0"
-                                oninput="app.calcPreview()"></div>
+                                oninput="window.app.calcPreview()"></div>
                         <div><label class="form-label">Comida</label><input type="number" id="inpFoodTime" value="0"
-                                oninput="app.calcPreview()"></div>
+                                oninput="window.app.calcPreview()"></div>
                     </div>
                 </div>
                 <p style="text-align:right;">Neto Calculado: <strong id="calcHoursDisplay">0:00</strong></p>
             </div>
-            <button class="btn-primary" onclick="app.saveLog()">Guardar</button>
-            <button class="btn-delete" id="btnDelete" style="display:none;" onclick="app.deleteLog()">Eliminar</button>
+            <button class="btn-primary" onclick="window.app.saveLog()">Guardar</button>
+            <button class="btn-delete" id="btnDelete" style="display:none;" onclick="window.app.deleteLog()">Eliminar</button>
             <button class="btn-secondary"
                 onclick="document.getElementById('logModal').classList.remove('active')">Cancelar</button>
         </div>
@@ -1211,9 +1211,9 @@
     <div class="modal" id="clockOutModal">
         <div class="modal-content" style="text-align:center;">
             <h3>¿Terminar Turno?</h3>
-            <button class="btn-primary" onclick="app.finishShiftReal()"
+            <button class="btn-primary" onclick="window.app.finishShiftReal()"
                 style="background:var(--alert); margin-top:15px; color:white;">TERMINAR</button>
-            <button class="btn-secondary" onclick="app.cancelClockOut()">Cancelar</button>
+            <button class="btn-secondary" onclick="window.app.cancelClockOut()">Cancelar</button>
         </div>
     </div>
 
@@ -1229,7 +1229,7 @@
         <div class="modal-content">
             <h3>Importar Excel</h3><textarea id="importTextArea" rows="6"
                 style="font-family:monospace; font-size:0.8rem;"></textarea><button class="btn-primary"
-                onclick="app.processImport()">Procesar</button><button class="btn-secondary"
+                onclick="window.app.processImport()">Procesar</button><button class="btn-secondary"
                 onclick="document.getElementById('importModal').classList.remove('active')">Cancelar</button>
         </div>
     </div>
@@ -1252,12 +1252,12 @@
     <div class="modal" id="dateJumpModal">
         <div class="modal-content">
             <h3>Ir a Fecha</h3><input type="date" id="inpJumpDate"><button class="btn-primary"
-                onclick="app.confirmJumpDate()">IR</button><button class="btn-secondary"
+                onclick="window.app.confirmJumpDate()">IR</button><button class="btn-secondary"
                 onclick="document.getElementById('dateJumpModal').classList.remove('active')">Cancelar</button>
         </div>
     </div>
 
-    <script>
+    <script type="module">
         const { initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, getFirestore, doc, getDoc, setDoc, collection, getDocs, query, where } = window.firebaseImports;
 
         const EMPLOYEES = { "17620": "Luis Ortiz", "1001": "Nadia", "9999": "Admin" };
@@ -1279,7 +1279,7 @@
             db = getFirestore(fbApp); 
         } catch (e) { setTimeout(() => showGlobalError(e.message), 1000); }
 
-        const app = {
+        window.app = {
             data: { logs: [], config: { rate1: 50, rate2: 75, bathAllow: 15, foodAllow: 45, empId: "", empName: "" }, activeShift: null },
             userId: null, offline: false, editingId: null, date: new Date(), timer: null, processing: false, authMode: 'login',
             currentTheme: 'light',
@@ -1499,7 +1499,7 @@
 
                 if (!s) {
                     off.style.display = 'block'; on.style.display = 'none';
-                    area.innerHTML = `<button class="ctrl-btn btn-start full-btn" onclick="app.clockIn()"><i class="ph-bold ph-play"></i> INICIAR JORNADA</button>`;
+                    area.innerHTML = `<button class="ctrl-btn btn-start full-btn" onclick="window.app.clockIn()"><i class="ph-bold ph-play"></i> INICIAR JORNADA</button>`;
                     if (this.timer) clearInterval(this.timer);
                 } else {
                     if (!s.breaks) { s.breaks = { bathroom: 0, food: 0 }; this.save(); }
@@ -1508,9 +1508,9 @@
                     document.getElementById('limFood').textContent = this.data.config.foodAllow || 45;
 
                     area.innerHTML = `
-                        <button class="ctrl-btn btn-bath ${s.breakType === 'bathroom' ? 'active' : ''}" onclick="app.toggleBreak('bathroom')"><i class="ph-bold ph-toilet"></i> BAÑO</button>
-                        <button class="ctrl-btn btn-food ${s.breakType === 'food' ? 'active' : ''}" onclick="app.toggleBreak('food')"><i class="ph-bold ph-hamburger"></i> COMIDA</button>
-                        <button class="ctrl-btn btn-stop full-btn" onclick="app.confirmClockOut()"><i class="ph-bold ph-stop"></i> TERMINAR JORNADA</button>
+                        <button class="ctrl-btn btn-bath ${s.breakType === 'bathroom' ? 'active' : ''}" onclick="window.app.toggleBreak('bathroom')"><i class="ph-bold ph-toilet"></i> BAÑO</button>
+                        <button class="ctrl-btn btn-food ${s.breakType === 'food' ? 'active' : ''}" onclick="window.app.toggleBreak('food')"><i class="ph-bold ph-hamburger"></i> COMIDA</button>
+                        <button class="ctrl-btn btn-stop full-btn" onclick="window.app.confirmClockOut()"><i class="ph-bold ph-stop"></i> TERMINAR JORNADA</button>
                     `;
 
                     if (this.timer) clearInterval(this.timer);
@@ -1617,7 +1617,7 @@
                         <div class="log-breaks">${chips}</div>
                     </div>
                     <div class="log-balance ${bal >= 0 ? 'pos' : 'neg'}">${bal > 0 ? '+' : ''}${this.fmt(bal)}</div>`;
-                    const div = document.createElement('div'); div.className = 'log-item'; div.onclick = () => this.openModal(l.id); div.innerHTML = html;
+                    const div = document.createElement('div'); div.className = 'log-item'; div.onclick = () => window.app.openModal(l.id); div.innerHTML = html;
                     list.appendChild(div);
                 });
                 this.renderCharts(mLogs);
@@ -1789,7 +1789,7 @@
 
             toggleLoader(s) { document.getElementById('mainLoader').style.display = s ? 'flex' : 'none'; }
         };
-        document.addEventListener('DOMContentLoaded', () => app.init());
+        document.addEventListener('DOMContentLoaded', () => window.app.init());
     </script>
 </body>
 
