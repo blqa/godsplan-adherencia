@@ -1396,6 +1396,8 @@
                     if (snap.exists()) { 
                         this.data = snap.data(); 
                         this.data.logs = this.data.logs || []; 
+                        // FIX: Inicializar config si es nulo
+                        this.data.config = this.data.config || { rate1: 50, rate2: 75, bathAllow: 15, foodAllow: 45, empId: "", empName: "" };
                     } else if (auth.currentUser.isAnonymous) { 
                         const l = localStorage.getItem('godsPlanData'); 
                         if (l) { this.data = JSON.parse(l); this.save(); } 
@@ -1497,6 +1499,11 @@
                 const off = document.getElementById('offlineDisplay');
                 const on = document.getElementById('timersDisplay');
 
+                // Asegurar que la config exista antes de leer sus propiedades
+                const config = this.data.config || {}; 
+                const bl = config.bathAllow || 15;
+                const fl = config.foodAllow || 45;
+
                 if (!s) {
                     off.style.display = 'block'; on.style.display = 'none';
                     area.innerHTML = `<button class="ctrl-btn btn-start full-btn" onclick="window.app.clockIn()"><i class="ph-bold ph-play"></i> INICIAR JORNADA</button>`;
@@ -1504,8 +1511,8 @@
                 } else {
                     if (!s.breaks) { s.breaks = { bathroom: 0, food: 0 }; this.save(); }
                     off.style.display = 'none'; on.style.display = 'grid';
-                    document.getElementById('limBath').textContent = this.data.config.bathAllow || 15;
-                    document.getElementById('limFood').textContent = this.data.config.foodAllow || 45;
+                    document.getElementById('limBath').textContent = bl;
+                    document.getElementById('limFood').textContent = fl;
 
                     area.innerHTML = `
                         <button class="ctrl-btn btn-bath ${s.breakType === 'bathroom' ? 'active' : ''}" onclick="window.app.toggleBreak('bathroom')"><i class="ph-bold ph-toilet"></i> BAÑO</button>
@@ -1522,7 +1529,7 @@
                             const d = (now - s.breakStart) / 60000;
                             if (s.breakType === 'bathroom') b += d; else if (s.breakType === 'food') f += d;
                         }
-                        const bl = this.data.config.bathAllow || 15, fl = this.data.config.foodAllow || 45;
+                        
                         document.getElementById('dispBath').textContent = this.fmtBreak(b);
                         document.getElementById('clockBathContainer').className = `side-clock ${s.breakType === 'bathroom' ? 'active' : ''} ${b > bl ? 'danger' : ''}`;
                         document.getElementById('dispFood').textContent = this.fmtBreak(f);
@@ -1561,7 +1568,8 @@
                 if (!s.breaks) s.breaks = { bathroom: 0, food: 0 };
                 const end = Date.now(), gross = (end - s.start) / 60000;
                 const b = s.breaks.bathroom || 0, f = s.breaks.food || 0;
-                const disc = Math.max(0, b - (this.data.config.bathAllow || 15)) + Math.max(0, f - (this.data.config.foodAllow || 45));
+                const config = this.data.config || {}; // FIX: Check config again
+                const disc = Math.max(0, b - (config.bathAllow || 15)) + Math.max(0, f - (config.foodAllow || 45));
                 this.data.logs.push({
                     id: Date.now(), date: new Date(s.start).toISOString().split('T')[0], type: 'Laboral',
                     in: new Date(s.start).toTimeString().slice(0, 5), out: new Date(end).toTimeString().slice(0, 5),
@@ -1585,8 +1593,10 @@
                 document.getElementById('weekTarget').textContent = this.fmt(wRes.target);
                 document.getElementById('weekWorked').textContent = this.fmt(wRes.worked);
                 this.setBadge('weekBalance', wRes.bal);
+                // FIX: Check config again
+                const config = this.data.config || {}; 
                 let pay = 0, he = Math.floor(wRes.bal / 60);
-                if (wRes.bal > 0) pay = (he <= 12) ? he * this.data.config.rate1 : (12 * this.data.config.rate1) + ((he - 12) * this.data.config.rate2);
+                if (wRes.bal > 0) pay = (he <= 12) ? he * (config.rate1 || 50) : (12 * (config.rate1 || 50)) + ((he - 12) * (config.rate2 || 75));
                 document.getElementById('weekPay').textContent = `$${Math.round(pay)}`;
 
                 const isQ1 = d.getDate() <= 15;
@@ -1606,8 +1616,10 @@
                     const bal = net - ((l.type === 'Laboral' || l.type === 'Falta') ? 480 : 0);
                     let chips = '';
                     if (l.details) {
-                        if (l.details.bath > 0) chips += `<span class="break-pill ${l.details.bath > (this.data.config.bathAllow || 15) ? 'excess' : ''}"><i class="ph-bold ph-toilet"></i> ${Math.round(l.details.bath)}m</span>`;
-                        if (l.details.food > 0) chips += `<span class="break-pill ${l.details.food > (this.data.config.foodAllow || 45) ? 'excess' : ''}"><i class="ph-bold ph-hamburger"></i> ${Math.round(l.details.food)}m</span>`;
+                         // FIX: Check config again
+                        const config = this.data.config || {}; 
+                        if (l.details.bath > 0) chips += `<span class="break-pill ${l.details.bath > (config.bathAllow || 15) ? 'excess' : ''}"><i class="ph-bold ph-toilet"></i> ${Math.round(l.details.bath)}m</span>`;
+                        if (l.details.food > 0) chips += `<span class="break-pill ${l.details.food > (config.foodAllow || 45) ? 'excess' : ''}"><i class="ph-bold ph-hamburger"></i> ${Math.round(l.details.food)}m</span>`;
                     }
                     const html = `
                     <div class="log-date-box"><div class="log-day">${x.getDate()}</div><div class="log-dow">${['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'][x.getDay()]}</div></div>
@@ -1761,7 +1773,9 @@
             toggleTimeInputs() { document.getElementById('timeInputs').style.display = document.getElementById('inpType').value === 'Falta' ? 'none' : 'block'; },
             calcPreview() {
                 const i = document.getElementById('inpIn').value, o = document.getElementById('inpOut').value, b = parseFloat(document.getElementById('inpBathTime').value) || 0, f = parseFloat(document.getElementById('inpFoodTime').value) || 0; const g = this.calcHours(i, o);
-                const disc = Math.max(0, b - (this.data.config.bathAllow || 15)) + Math.max(0, f - (this.data.config.foodAllow || 45));
+                // FIX: Check config again
+                const config = this.data.config || {};
+                const disc = Math.max(0, b - (config.bathAllow || 15)) + Math.max(0, f - (config.foodAllow || 45));
                 document.getElementById('calcHoursDisplay').textContent = g === -1 ? 'Error' : this.fmt(g - disc);
             },
             saveLog() {
@@ -1769,7 +1783,9 @@
                 const b = parseFloat(document.getElementById('inpBathTime').value) || 0, f = parseFloat(document.getElementById('inpFoodTime').value) || 0;
                 if (!d) return this.showMessage("Fecha requerida");
                 let h = 0; if (t === 'Laboral' || (t === 'Descanso' && i && o)) { h = this.calcHours(i, o); if (h <= 0) return this.showMessage("Horario inválido"); }
-                const disc = Math.max(0, b - (this.data.config.bathAllow || 15)) + Math.max(0, f - (this.data.config.foodAllow || 45));
+                 // FIX: Check config again
+                const config = this.data.config || {};
+                const disc = Math.max(0, b - (config.bathAllow || 15)) + Math.max(0, f - (config.foodAllow || 45));
                 const log = { id: this.editingId || Date.now(), date: d, type: t, in: i, out: o, hours: h, disconnection: disc, details: { bath: b, food: f } };
                 if (this.editingId) this.data.logs[this.data.logs.findIndex(x => x.id === this.editingId)] = log; else this.data.logs.push(log);
                 this.save(); this.render(); document.getElementById('logModal').classList.remove('active');
