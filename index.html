@@ -1171,8 +1171,6 @@
         </div>
     </div>
 
-    <!-- ELIMINADO: AUTH MODAL (Ahora se usa redirección) -->
-    
     <!-- LOG MODAL -->
     <div class="modal" id="logModal">
         <div class="modal-content">
@@ -1388,7 +1386,7 @@
                     unauthenticatedView.style.display = 'block';
                 }
 
-                let t = u.isAnonymous ? "Local" : (this.data.config.empName || u.displayName || "Usuario");
+                let t = u.isAnonymous ? "ANÓNIMO (Ver perfil para Iniciar Sesión)" : (this.data.config.empName || u.displayName || "Usuario");
                 // Mostrar ID si es un login por ID
                 if (!u.isAnonymous && u.email && u.email.includes('@godsplan.site')) {
                     t = u.email.split('@')[0];
@@ -1553,6 +1551,13 @@
                 }
             },
             clockIn() {
+                // *** FIX: REDIRECCIONAR SI ES ANÓNIMO ***
+                if (auth.currentUser?.isAnonymous) {
+                    this.showMessage("Debes iniciar sesión con tu cuenta de empleado para iniciar una jornada.");
+                    this.redirectToAuth();
+                    return;
+                }
+                
                 if (this.processing) return; this.processing = true;
                 this.stopBreak(); // Asegurarse de que no hay un descanso activo
                 this.data.activeShift = { start: Date.now(), breaks: { bathroom: 0, food: 0 }, breakStart: null, breakType: null };
@@ -1780,7 +1785,7 @@
                 this.toggleTimeInputs();
             },
             toggleTimeInputs() { document.getElementById('timeInputs').style.display = document.getElementById('inpType').value === 'Falta' || document.getElementById('inpType').value === 'Vacaciones' ? 'none' : 'block'; },
-            calcPreview() {
+            calcPreview() { 
                 const i = document.getElementById('inpIn').value, o = document.getElementById('inpOut').value, b = parseFloat(document.getElementById('inpBathTime').value) || 0, f = parseFloat(document.getElementById('inpFoodTime').value) || 0; const g = this.calcHours(i, o);
                 // FIX: Check config again
                 const config = this.data.config || {};
