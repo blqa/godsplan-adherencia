@@ -1092,16 +1092,18 @@
             </div>
 
             <div id="tAccount" class="tab-content active">
-                <div
-                    style="background:var(--bg); padding:10px; border-radius:8px; margin-bottom:15px; border:1px solid var(--border);">
+                <!-- VISTA AUTENTICADA: Muestra perfil y logout -->
+                <div id="authenticatedView" style="display:none; background:var(--bg); padding:10px; border-radius:8px; margin-bottom:15px; border:1px solid var(--border);">
                     <div id="userProfile" style="font-weight:700; margin-bottom:5px;">...</div>
                     <button class="btn-secondary" onclick="window.app.logout()" style="padding:8px;">Cerrar Sesión</button>
                 </div>
-                <button class="btn-primary" style="background:#0f172a;" onclick="window.app.openAuthModal('login')">Ingresar
-                    con ID</button>
-                <button class="btn-primary" style="background:#4285F4;" onclick="window.app.loginWithGoogle()">Ingresar con
-                    Google</button>
-                <button class="btn-secondary" onclick="window.app.openAuthModal('register')">Crear Cuenta (ID)</button>
+                <!-- VISTA NO AUTENTICADA: Muestra botón de redirección al sitio principal -->
+                <div id="unauthenticatedView" style="display:block; text-align:center;">
+                    <p style="font-size:0.8rem; color:var(--text-mute); margin-bottom:15px;">La autenticación es centralizada en GodsPlan.site.</p>
+                    <button class="btn-primary" style="background:var(--brand); color:white;" onclick="window.app.redirectToAuth()">
+                        <i class="ph-bold ph-sign-in"></i> Iniciar Sesión en GodsPlan.site
+                    </button>
+                </div>
             </div>
 
             <div id="tDesign" class="tab-content">
@@ -1169,20 +1171,8 @@
         </div>
     </div>
 
-    <!-- AUTH MODAL -->
-    <div class="modal" id="authModal">
-        <div class="modal-content">
-            <h3 id="authTitle" style="text-align:center; margin-bottom:15px;">Acceso</h3>
-            <div id="registerFields" style="display:none;"><label class="form-label">Nombre</label><input type="text"
-                    id="regName"></div>
-            <label class="form-label">ID Empleado / Correo</label><input type="text" id="authId">
-            <label class="form-label">Contraseña</label><input type="password" id="authPass">
-            <button class="btn-primary" onclick="window.app.processAuth()">Continuar</button>
-            <button class="btn-secondary"
-                onclick="document.getElementById('authModal').classList.remove('active')">Cancelar</button>
-        </div>
-    </div>
-
+    <!-- ELIMINADO: AUTH MODAL (Ahora se usa redirección) -->
+    
     <!-- LOG MODAL -->
     <div class="modal" id="logModal">
         <div class="modal-content">
@@ -1318,6 +1308,7 @@
                         if (initialAuthToken) {
                             try { await signInWithCustomToken(auth, initialAuthToken); return; } catch(e){}
                         }
+                        // Forzar inicio de sesión anónimo si no hay usuario para permitir la carga de la app
                         await signInAnonymously(auth).catch(() => this.goOffline());
                     }
                 });
@@ -1386,6 +1377,17 @@
 
             goOffline() { this.offline = true; document.getElementById('auth-status').innerHTML = `<i class="ph-bold ph-wifi-slash"></i> Offline`; this.loadLocal(); },
             renderAuth(u) {
+                const authenticatedView = document.getElementById('authenticatedView');
+                const unauthenticatedView = document.getElementById('unauthenticatedView');
+
+                if (u && !u.isAnonymous) {
+                    authenticatedView.style.display = 'block';
+                    unauthenticatedView.style.display = 'none';
+                } else {
+                    authenticatedView.style.display = 'none';
+                    unauthenticatedView.style.display = 'block';
+                }
+
                 let t = u.isAnonymous ? "Local" : (this.data.config.empName || u.displayName || "Usuario");
                 // Mostrar ID si es un login por ID
                 if (!u.isAnonymous && u.email && u.email.includes('@godsplan.site')) {
@@ -1743,34 +1745,23 @@
             saveConfig() { this.data.config.bathAllow = parseFloat(document.getElementById('cfgBath').value) || 15; this.data.config.foodAllow = parseFloat(document.getElementById('cfgFood').value) || 45; this.data.config.rate1 = parseFloat(document.getElementById('cfgRate1').value) || 50; this.data.config.rate2 = parseFloat(document.getElementById('cfgRate2').value) || 75; this.save(); document.getElementById('configModal').classList.remove('active'); },
             switchTab(id) { document.querySelectorAll('.tab').forEach(t => t.classList.remove('active')); document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); event.target.classList.add('active'); document.getElementById(id).classList.add('active'); },
             lookupEmployee() { const id = document.getElementById('cfgEmpId').value; const n = EMPLOYEES[id]; const d = document.getElementById('employeeNameDisplay'); if (n) { d.textContent = "Hola, " + n; this.data.config.empId = id; this.data.config.empName = n; } else d.textContent = "No encontrado"; },
-            openAuthModal(m) { this.authMode = m; document.getElementById('configModal').classList.remove('active'); document.getElementById('authModal').classList.add('active'); document.getElementById('authTitle').textContent = m === 'login' ? 'Entrar' : 'Registro'; document.getElementById('registerFields').style.display = m === 'register' ? 'block' : 'none'; },
             
-            // --- UPDATED AUTH PROCESS (UNIFIED) ---
-            async processAuth() { 
-                const id = document.getElementById('authId').value.trim();
-                const p = document.getElementById('authPass').value;
-                
-                // Unify: If no @, assume it's an ID and append fake domain
-                let e = id;
-                if (!e.includes('@')) {
-                    e = `${id}@godsplan.site`;
-                }
-
-                try { 
-                    if (this.authMode === 'register') { 
-                        const n = document.getElementById('regName').value; 
-                        const r = await createUserWithEmailAndPassword(auth, e, p); 
-                        await updateProfile(r.user, { displayName: n }); 
-                    } else {
-                        await signInWithEmailAndPassword(auth, e, p); 
-                    }
-                    document.getElementById('authModal').classList.remove('active'); 
-                } catch (err) { this.showMessage(err.message); } 
+            // --- REDIRECCIÓN DE AUTH ---
+            redirectToAuth() {
+                 this.showMessage("Redirigiendo a GodsPlan.site para iniciar sesión...");
+                 setTimeout(() => {
+                     window.location.href = "https://godsplan.site";
+                 }, 1500);
             },
             
-            async loginWithGoogle() { try { await signInWithPopup(auth, new GoogleAuthProvider()); document.getElementById('configModal').classList.remove('active'); } catch (e) { this.showMessage(e.message); } },
-            // FIX: Logout ahora redirige al home real
+            // Funciones de Auth Obsoletas (Redirigen)
+            openAuthModal(m) { this.redirectToAuth(); },
+            async processAuth() { this.redirectToAuth(); },
+            async loginWithGoogle() { this.redirectToAuth(); },
+            
+            // Logout redirige al home real
             logout() { signOut(auth).then(() => window.location.href = "https://godsplan.site"); }, 
+            
             resetData() { if (confirm("¿Borrar todo?")) { this.data = { logs: [], config: this.data.config, activeShift: null }; this.save(); location.reload(); } },
 
             openModal(id = null) {
