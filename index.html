@@ -647,6 +647,18 @@
             color: #fca5a5;
         }
 
+        .tag.vacaciones {
+             background: #ffe6cc; /* Nuevo color para Vacaciones */
+            color: #d97706;
+        }
+
+        [data-theme="dark"] .tag.vacaciones,
+        [data-theme="red"] .tag.vacaciones {
+            background: #78350f;
+            color: #fcd34d;
+        }
+
+
         .log-breaks {
             display: flex;
             gap: 5px;
@@ -949,7 +961,7 @@
     <nav id="global-nav">
         <a href="https://godsplan.site" class="g-logo"><i class="ph-bold ph-circles-three-plus"></i> God's Plan</a>
         <div class="g-links">
-            <a href="#" class="g-link active">ADHERENCIA</a>
+            <a href="https://adherencia.godsplan.site" class="g-link active">ADHERENCIA</a>
             <a href="https://auth.godsplan.site" class="g-link">AUTH</a>
             <a href="https://cuenta.godsplan.site" class="g-link">CUENTA</a>
             <a href="https://finanzas.godsplan.site" class="g-link">FINANZAS</a>
@@ -1262,7 +1274,7 @@
 
         const EMPLOYEES = { "17620": "Luis Ortiz", "1001": "Nadia", "9999": "Admin" };
         
-        // --- CONFIGURACIÓN ROBUSTA (Igual que en Finanzas/Cuenta) ---
+        // --- CONFIGURACIÓN ROBUSTA ---
         const fallbackConfig = { apiKey: "AIzaSyCrHBz94UtgiaYntHCYhC5jNa6auUI63vQ", authDomain: "god-s-plan-d737b.firebaseapp.com", projectId: "god-s-plan-d737b", storageBucket: "god-s-plan-d737b.firebasestorage.app", messagingSenderId: "458198314028", appId: "1:458198314028:web:d62b24cee2d19ee5b47589" };
         let firebaseConfig = fallbackConfig;
         try { if (typeof __firebase_config !== 'undefined' && __firebase_config) { const envConfig = typeof __firebase_config === 'string' ? JSON.parse(__firebase_config) : __firebase_config; if (envConfig && envConfig.apiKey) firebaseConfig = envConfig; } } catch(e) { console.error(e); }
@@ -1288,7 +1300,7 @@
                 document.getElementById('auth-status').style.display = 'flex';
 
                 // LOAD THEME
-                const savedTheme = localStorage.getItem('gp_theme') || 'light';
+                const savedTheme = localStorage.getItem('gp_theme') || 'dark'; // Cambiado a dark por defecto para el look inicial
                 this.setTheme(savedTheme);
                 const customColors = JSON.parse(localStorage.getItem('gp_custom_colors'));
                 if (customColors) this.applyCustomColors(customColors);
@@ -1430,6 +1442,7 @@
 
                 try {
                     // Fetch all user data using Modular SDK
+                    // Utilizamos una consulta simple para evitar errores de índice en Firestore
                     const q = collection(db, "godsPlanData");
                     const snap = await getDocs(q);
                     
@@ -1539,6 +1552,7 @@
             },
             clockIn() {
                 if (this.processing) return; this.processing = true;
+                this.stopBreak(); // Asegurarse de que no hay un descanso activo
                 this.data.activeShift = { start: Date.now(), breaks: { bathroom: 0, food: 0 }, breakStart: null, breakType: null };
                 this.save(); this.uiClock(); this.processing = false;
             },
@@ -1565,6 +1579,9 @@
             },
             finishShiftReal() {
                 const s = this.data.activeShift;
+                if (!s) return;
+                if (s.breakStart) this.stopBreak(); // Asegurar stop final
+
                 if (!s.breaks) s.breaks = { bathroom: 0, food: 0 };
                 const end = Date.now(), gross = (end - s.start) / 60000;
                 const b = s.breaks.bathroom || 0, f = s.breaks.food || 0;
@@ -1752,7 +1769,8 @@
             },
             
             async loginWithGoogle() { try { await signInWithPopup(auth, new GoogleAuthProvider()); document.getElementById('configModal').classList.remove('active'); } catch (e) { this.showMessage(e.message); } },
-            logout() { signOut(auth).then(() => location.reload()); },
+            // FIX: Logout ahora redirige al home real
+            logout() { signOut(auth).then(() => window.location.href = "https://godsplan.site"); }, 
             resetData() { if (confirm("¿Borrar todo?")) { this.data = { logs: [], config: this.data.config, activeShift: null }; this.save(); location.reload(); } },
 
             openModal(id = null) {
@@ -1770,7 +1788,7 @@
                 }
                 this.toggleTimeInputs();
             },
-            toggleTimeInputs() { document.getElementById('timeInputs').style.display = document.getElementById('inpType').value === 'Falta' ? 'none' : 'block'; },
+            toggleTimeInputs() { document.getElementById('timeInputs').style.display = document.getElementById('inpType').value === 'Falta' || document.getElementById('inpType').value === 'Vacaciones' ? 'none' : 'block'; },
             calcPreview() {
                 const i = document.getElementById('inpIn').value, o = document.getElementById('inpOut').value, b = parseFloat(document.getElementById('inpBathTime').value) || 0, f = parseFloat(document.getElementById('inpFoodTime').value) || 0; const g = this.calcHours(i, o);
                 // FIX: Check config again
@@ -1782,10 +1800,16 @@
                 const d = document.getElementById('inpDate').value, t = document.getElementById('inpType').value, i = document.getElementById('inpIn').value, o = document.getElementById('inpOut').value;
                 const b = parseFloat(document.getElementById('inpBathTime').value) || 0, f = parseFloat(document.getElementById('inpFoodTime').value) || 0;
                 if (!d) return this.showMessage("Fecha requerida");
-                let h = 0; if (t === 'Laboral' || (t === 'Descanso' && i && o)) { h = this.calcHours(i, o); if (h <= 0) return this.showMessage("Horario inválido"); }
-                 // FIX: Check config again
-                const config = this.data.config || {};
-                const disc = Math.max(0, b - (config.bathAllow || 15)) + Math.max(0, f - (config.foodAllow || 45));
+                let h = 0, disc = 0; 
+                
+                if (t === 'Laboral' || t === 'Descanso') { 
+                    h = this.calcHours(i, o); 
+                    if (h <= 0) return this.showMessage("Horario inválido"); 
+                    // FIX: Check config again
+                    const config = this.data.config || {};
+                    disc = Math.max(0, b - (config.bathAllow || 15)) + Math.max(0, f - (config.foodAllow || 45));
+                }
+
                 const log = { id: this.editingId || Date.now(), date: d, type: t, in: i, out: o, hours: h, disconnection: disc, details: { bath: b, food: f } };
                 if (this.editingId) this.data.logs[this.data.logs.findIndex(x => x.id === this.editingId)] = log; else this.data.logs.push(log);
                 this.save(); this.render(); document.getElementById('logModal').classList.remove('active');
