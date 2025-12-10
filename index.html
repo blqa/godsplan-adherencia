@@ -1296,21 +1296,38 @@
                 if (!auth) return this.goOffline();
 
                 onAuthStateChanged(auth, async u => {
-                    if (u) { 
+                    // FIX: Evitar que el código sobreescriba una sesión válida (o fallida) con una nueva anónima.
+                    if (u && !u.isAnonymous) { 
+                        // SESIÓN ACTIVA REAL
                         this.userId = u.uid; 
                         this.offline = false; 
                         this.renderAuth(u); 
                         await this.load(); 
+                    } else if (u && u.isAnonymous) { 
+                        // SESIÓN ANÓNIMA (Permite uso local, pero muestra la opción de Login)
+                        this.userId = u.uid;
+                        this.offline = false; 
+                        this.renderAuth(u);
+                        await this.load();
                     } else {
-                        // Intentar login automático con token del entorno si existe
+                        // NO USER (u is null): Intentamos iniciar sesión anónimamente si aún no se ha hecho 
+                        // o si el token inicial existía, para que el usuario tenga un UID para guardar localmente.
                         if (initialAuthToken) {
-                            try { await signInWithCustomToken(auth, initialAuthToken); return; } catch(e){}
+                             try { 
+                                // Esto promoverá la sesión si el token es válido
+                                await signInWithCustomToken(auth, initialAuthToken); 
+                                return; // Esperar a que el listener se dispare de nuevo
+                            } catch(e) {
+                                // Si el token falla (ej. expirado), procedemos con el anónimo si es necesario
+                                await signInAnonymously(auth).catch(() => this.goOffline());
+                            }
+                        } else {
+                            // Sin token inicial, forzamos anónimo para obtener un UID
+                            await signInAnonymously(auth).catch(() => this.goOffline());
                         }
-                        // Forzar inicio de sesión anónimo si no hay usuario para permitir la carga de la app
-                        await signInAnonymously(auth).catch(() => this.goOffline());
                     }
+                    this.loadLocal(); // Cargar siempre local si hay un fallback
                 });
-                this.loadLocal();
             },
 
             // --- THEME LOGIC ---
@@ -1378,7 +1395,9 @@
                 const authenticatedView = document.getElementById('authenticatedView');
                 const unauthenticatedView = document.getElementById('unauthenticatedView');
 
-                if (u && !u.isAnonymous) {
+                const isRealUser = u && !u.isAnonymous;
+
+                if (isRealUser) {
                     authenticatedView.style.display = 'block';
                     unauthenticatedView.style.display = 'none';
                 } else {
@@ -1386,9 +1405,9 @@
                     unauthenticatedView.style.display = 'block';
                 }
 
-                let t = u.isAnonymous ? "ANÓNIMO (Ver perfil para Iniciar Sesión)" : (this.data.config.empName || u.displayName || "Usuario");
+                let t = u ? (u.isAnonymous ? "ANÓNIMO (Ver perfil para Iniciar Sesión)" : (this.data.config.empName || u.displayName || "Usuario")) : "DESCONECTADO";
                 // Mostrar ID si es un login por ID
-                if (!u.isAnonymous && u.email && u.email.includes('@godsplan.site')) {
+                if (isRealUser && u.email && u.email.includes('@godsplan.site')) {
                     t = u.email.split('@')[0];
                 }
                 document.getElementById('auth-status').innerHTML = `<i class="ph-fill ph-user-circle"></i> ${t}`;
