@@ -276,9 +276,21 @@
             justify-content: center;
             opacity: 0.5;
             transition: opacity 0.3s, transform 0.2s, background 0.3s;
-            cursor: pointer; /* Indica que es clickable */
+            cursor: pointer;
             padding: 5px;
             border-radius: 8px;
+            position: relative;
+            z-index: 5;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            /* Button reset props */
+            background: transparent;
+            border: none;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            -webkit-tap-highlight-color: rgba(0,0,0,0.1); /* Feedback visual en móvil */
         }
 
         .side-clock:hover {
@@ -298,6 +310,10 @@
             text-transform: uppercase;
             color: var(--text-mute);
             margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
         }
 
         .side-val {
@@ -1006,20 +1022,20 @@
                 <div class="spinner"></div>
             </div>
             <div class="timer-grid" id="timersDisplay" style="display:none;">
-                <div class="side-clock" id="clockBathContainer" onclick="window.app.openTimerEdit('bathroom')" title="Toca para ajustar tiempo manualmente">
-                    <div class="side-label"><i class="ph-bold ph-toilet"></i> Baño</div>
+                <button class="side-clock" id="clockBathContainer" onclick="window.app.openTimerEdit('bathroom')" type="button" title="Toca para ajustar">
+                    <div class="side-label"><i class="ph-bold ph-toilet"></i> Baño <i class="ph-bold ph-pencil-simple" style="font-size:0.9em; margin-left:3px; color:var(--brand);"></i></div>
                     <div class="side-val" id="dispBath">00:00</div>
                     <div class="side-limit">/ <span id="limBath">15</span>m</div>
-                </div>
+                </button>
                 <div class="main-clock">
                     <div class="clock-status" id="clockStatus">TURNO ACTIVO</div>
                     <div class="clock-timer" id="clockDisplay">00:00</div>
                 </div>
-                <div class="side-clock" id="clockFoodContainer" onclick="window.app.openTimerEdit('food')" title="Toca para ajustar tiempo manualmente">
-                    <div class="side-label"><i class="ph-bold ph-hamburger"></i> Comida</div>
+                <button class="side-clock" id="clockFoodContainer" onclick="window.app.openTimerEdit('food')" type="button" title="Toca para ajustar">
+                    <div class="side-label"><i class="ph-bold ph-hamburger"></i> Comida <i class="ph-bold ph-pencil-simple" style="font-size:0.9em; margin-left:3px; color:var(--brand);"></i></div>
                     <div class="side-val" id="dispFood">00:00</div>
                     <div class="side-limit">/ <span id="limFood">45</span>m</div>
-                </div>
+                </button>
             </div>
             <div id="offlineDisplay" style="display:block;">
                 <div class="clock-status" style="margin-bottom:10px;">FUERA DE TURNO</div>
@@ -1571,6 +1587,9 @@
                     document.getElementById('limBath').textContent = bl;
                     document.getElementById('limFood').textContent = fl;
 
+                    const bathEl = document.getElementById('clockBathContainer');
+                    const foodEl = document.getElementById('clockFoodContainer');
+
                     area.innerHTML = `
                         <button class="ctrl-btn btn-bath ${s.breakType === 'bathroom' ? 'active' : ''}" onclick="window.app.toggleBreak('bathroom')"><i class="ph-bold ph-toilet"></i> BAÑO</button>
                         <button class="ctrl-btn btn-food ${s.breakType === 'food' ? 'active' : ''}" onclick="window.app.toggleBreak('food')"><i class="ph-bold ph-hamburger"></i> COMIDA</button>
@@ -1587,10 +1606,15 @@
                             if (s.breakType === 'bathroom') b += d; else if (s.breakType === 'food') f += d;
                         }
                         
+                        // UPDATE BATH
                         document.getElementById('dispBath').textContent = this.fmtBreak(b);
-                        document.getElementById('clockBathContainer').className = `side-clock ${s.breakType === 'bathroom' ? 'active' : ''} ${b > bl ? 'danger' : ''}`;
+                        if (s.breakType === 'bathroom') bathEl.classList.add('active'); else bathEl.classList.remove('active');
+                        if (b > bl) bathEl.classList.add('danger'); else bathEl.classList.remove('danger');
+
+                        // UPDATE FOOD
                         document.getElementById('dispFood').textContent = this.fmtBreak(f);
-                        document.getElementById('clockFoodContainer').className = `side-clock ${s.breakType === 'food' ? 'active' : ''} ${f > fl ? 'danger' : ''}`;
+                        if (s.breakType === 'food') foodEl.classList.add('active'); else foodEl.classList.remove('active');
+                        if (f > fl) foodEl.classList.add('danger'); else foodEl.classList.remove('danger');
                     }, 1000);
                 }
             },
@@ -1606,7 +1630,10 @@
                 
                 document.getElementById('timerEditTitle').textContent = type === 'bathroom' ? 'Baño' : 'Comida';
                 document.getElementById('inpTimerEdit').value = Math.floor(accumulated); // Mostramos entero para facilitar
-                document.getElementById('timerEditModal').classList.add('active');
+                
+                // FORCE OPEN
+                const modal = document.getElementById('timerEditModal');
+                if(modal) modal.classList.add('active');
             },
 
             // NUEVA FUNCIÓN: Guardar edición de timer
