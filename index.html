@@ -1275,7 +1275,7 @@
     </div>
     <div class="modal" id="teamModal">
         <div class="modal-content">
-            <h3 style="text-align:center; margin-bottom:15px; color:var(--brand);">🏆 Reporte de Equipo</h3>
+            <h3>🏆 Reporte de Equipo</h3>
             <p style="font-size:0.8rem; color:var(--text-mute); margin-bottom:10px;">Horas netas trabajadas en la semana
                 actual por cada usuario con registro.</p>
             <div id="teamLoader" style="text-align:center; padding:15px;"><i class="ph-bold ph-circle-notch"
@@ -1624,12 +1624,18 @@
                 if (!this.data.activeShift) return;
                 
                 this.editingTimerType = type;
-                // Calculamos el valor actual acumulado (sin contar el tiempo que transcurre AHORA mismo si el timer está activo)
-                // Esto es porque estamos editando la BASE del acumulado.
-                const accumulated = this.data.activeShift.breaks[type] || 0;
+                
+                // Calculamos el valor actual acumulado (base + tiempo transcurrido si está activo)
+                let currentTotal = this.data.activeShift.breaks[type] || 0;
+                
+                // Si este timer específico está corriendo AHORA, sumamos lo que lleva
+                if (this.data.activeShift.breakStart && this.data.activeShift.breakType === type) {
+                    const elapsedMins = (Date.now() - this.data.activeShift.breakStart) / 60000;
+                    currentTotal += elapsedMins;
+                }
                 
                 document.getElementById('timerEditTitle').textContent = type === 'bathroom' ? 'Baño' : 'Comida';
-                document.getElementById('inpTimerEdit').value = Math.floor(accumulated); // Mostramos entero para facilitar
+                document.getElementById('inpTimerEdit').value = Math.floor(currentTotal); // Mostramos entero para facilitar
                 
                 // FORCE OPEN
                 const modal = document.getElementById('timerEditModal');
@@ -1646,13 +1652,24 @@
                     return;
                 }
 
-                // Actualizamos el acumulado en el objeto breaks
-                this.data.activeShift.breaks[this.editingTimerType] = newVal;
+                // LÓGICA DE ACTUALIZACIÓN INTELIGENTE
+                if (this.data.activeShift.breakStart && this.data.activeShift.breakType === this.editingTimerType) {
+                    // Si el timer está corriendo:
+                    // 1. Actualizamos el acumulado base al nuevo valor ingresado por el usuario.
+                    this.data.activeShift.breaks[this.editingTimerType] = newVal;
+                    // 2. Reseteamos el "inicio" del intervalo a AHORA MISMO.
+                    // Esto hace que el cálculo visual sea: Base (Nuevo Valor) + (Ahora - Ahora) = Nuevo Valor.
+                    // Efectivamente "consolida" todo el tiempo pasado en el nuevo valor base y sigue contando desde ahí.
+                    this.data.activeShift.breakStart = Date.now();
+                } else {
+                    // Si no está corriendo, simplemente actualizamos el acumulado
+                    this.data.activeShift.breaks[this.editingTimerType] = newVal;
+                }
                 
                 this.save();
                 this.uiClock(); // Refresca la UI inmediatamente
                 document.getElementById('timerEditModal').classList.remove('active');
-                this.showSuccess("Tiempo actualizado correctamente");
+                this.showSuccess("Tiempo ajustado");
             },
 
             clockIn() {
@@ -1725,7 +1742,7 @@
                 // FIX: Check config again
                 const config = this.data.config || {}; 
                 let pay = 0, he = Math.floor(wRes.bal / 60);
-                if (wRes.bal > 0) pay = (he <= 12) ? he * (config.rate1 || 50) : (12 * (config.rate1 || 50)) + ((he - 12) * (config.rate2 || 75));
+                if (wRes.bal > 0) pay = (he <= 12) ? he * (config.rate1 || 50) : (12 * (config.rate1 || 50)) + ((he - 12) * (config.rate1 || 50));
                 document.getElementById('weekPay').textContent = `$${Math.round(pay)}`;
 
                 const isQ1 = d.getDate() <= 15;
