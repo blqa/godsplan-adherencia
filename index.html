@@ -275,12 +275,21 @@
             align-items: center;
             justify-content: center;
             opacity: 0.5;
-            transition: opacity 0.3s;
+            transition: opacity 0.3s, transform 0.2s, background 0.3s;
+            cursor: pointer; /* Indica que es clickable */
+            padding: 5px;
+            border-radius: 8px;
+        }
+
+        .side-clock:hover {
+            background: var(--bg);
+            opacity: 0.8;
         }
 
         .side-clock.active {
             opacity: 1;
             transform: scale(1.05);
+            background: transparent;
         }
 
         .side-label {
@@ -997,7 +1006,7 @@
                 <div class="spinner"></div>
             </div>
             <div class="timer-grid" id="timersDisplay" style="display:none;">
-                <div class="side-clock" id="clockBathContainer">
+                <div class="side-clock" id="clockBathContainer" onclick="window.app.openTimerEdit('bathroom')" title="Toca para ajustar tiempo manualmente">
                     <div class="side-label"><i class="ph-bold ph-toilet"></i> Baño</div>
                     <div class="side-val" id="dispBath">00:00</div>
                     <div class="side-limit">/ <span id="limBath">15</span>m</div>
@@ -1006,7 +1015,7 @@
                     <div class="clock-status" id="clockStatus">TURNO ACTIVO</div>
                     <div class="clock-timer" id="clockDisplay">00:00</div>
                 </div>
-                <div class="side-clock" id="clockFoodContainer">
+                <div class="side-clock" id="clockFoodContainer" onclick="window.app.openTimerEdit('food')" title="Toca para ajustar tiempo manualmente">
                     <div class="side-label"><i class="ph-bold ph-hamburger"></i> Comida</div>
                     <div class="side-val" id="dispFood">00:00</div>
                     <div class="side-limit">/ <span id="limFood">45</span>m</div>
@@ -1217,6 +1226,21 @@
         </div>
     </div>
 
+    <!-- EDITAR TIEMPO MODAL (NUEVO) -->
+    <div class="modal" id="timerEditModal">
+        <div class="modal-content">
+            <h3 style="margin-bottom:15px;">Ajustar Tiempo</h3>
+            <p style="font-size:0.9rem; margin-bottom:10px; color:var(--text-mute);">
+                Ingresa el total acumulado de minutos para <strong id="timerEditTitle" style="color:var(--text);">--</strong>.
+            </p>
+            <input type="number" id="inpTimerEdit" placeholder="Minutos totales" style="font-size:1.1rem;">
+            <div style="display:flex; gap:10px; margin-top:10px;">
+                <button class="btn-primary" onclick="window.app.saveTimerEdit()">Actualizar</button>
+                <button class="btn-secondary" onclick="document.getElementById('timerEditModal').classList.remove('active')">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- UTILS MODALS -->
     <div class="modal" id="msgModal">
         <div class="modal-content" style="text-align:center;"><i id="msgIcon"
@@ -1283,6 +1307,7 @@
             data: { logs: [], config: { rate1: 50, rate2: 75, bathAllow: 15, foodAllow: 45, empId: "", empName: "" }, activeShift: null },
             userId: null, offline: false, editingId: null, date: new Date(), timer: null, processing: false, authMode: 'login',
             currentTheme: 'light',
+            editingTimerType: null, // NUEVO PARA EDICION DE TIEMPO
 
             init() {
                 document.getElementById('auth-status').style.display = 'flex';
@@ -1569,6 +1594,40 @@
                     }, 1000);
                 }
             },
+            
+            // NUEVA FUNCIÓN: Abrir modal de edición de timer
+            openTimerEdit(type) {
+                if (!this.data.activeShift) return;
+                
+                this.editingTimerType = type;
+                // Calculamos el valor actual acumulado (sin contar el tiempo que transcurre AHORA mismo si el timer está activo)
+                // Esto es porque estamos editando la BASE del acumulado.
+                const accumulated = this.data.activeShift.breaks[type] || 0;
+                
+                document.getElementById('timerEditTitle').textContent = type === 'bathroom' ? 'Baño' : 'Comida';
+                document.getElementById('inpTimerEdit').value = Math.floor(accumulated); // Mostramos entero para facilitar
+                document.getElementById('timerEditModal').classList.add('active');
+            },
+
+            // NUEVA FUNCIÓN: Guardar edición de timer
+            saveTimerEdit() {
+                if (!this.editingTimerType || !this.data.activeShift) return;
+                const newVal = parseFloat(document.getElementById('inpTimerEdit').value);
+                
+                if (isNaN(newVal) || newVal < 0) {
+                    this.showMessage("Por favor ingresa un número válido de minutos.");
+                    return;
+                }
+
+                // Actualizamos el acumulado en el objeto breaks
+                this.data.activeShift.breaks[this.editingTimerType] = newVal;
+                
+                this.save();
+                this.uiClock(); // Refresca la UI inmediatamente
+                document.getElementById('timerEditModal').classList.remove('active');
+                this.showSuccess("Tiempo actualizado correctamente");
+            },
+
             clockIn() {
                 // *** FIX: REDIRECCIONAR SI ES ANÓNIMO ***
                 if (auth.currentUser?.isAnonymous) {
