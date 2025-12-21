@@ -13,7 +13,7 @@
     <!-- FUENTE UNIFICADA: PLUS JAKARTA SANS -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- SCRIPT DE ICONOS (Mantenido, pero se recomienda usar SVG inline para producción máxima) -->
+    <!-- SCRIPT DE ICONOS -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     
     <!-- TAILWIND CSS & CONFIGURACIÓN DE TEMA -->
@@ -89,8 +89,6 @@
                         radial-gradient(circle at 80% 20%, rgba(231, 0, 0, 0.15) 0%, transparent 40%),
                         radial-gradient(circle at 20% 80%, rgba(100, 0, 0, 0.2) 0%, transparent 40%);
             filter: blur(80px);
-            /* OPTIMIZACIÓN: Animación eliminada para móviles por rendimiento. Descomentar si es PC potente. */
-            /* animation: nebula 15s infinite alternate ease-in-out; */
             pointer-events: none;
         }
 
@@ -314,7 +312,6 @@
                 <span class="font-bold text-lg text-text">Navegación</span>
                  <button onclick="window.app.toggleModal('navModal', false)" class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 text-text-mute hover:text-text cursor-pointer"><i class="ph-bold ph-x text-lg"></i></button>
             </div>
-            <!-- Contenido Nav -->
         </div>
     </div>
     
@@ -521,6 +518,7 @@
                             appView.classList.remove('hidden');
                             setTimeout(() => appView.classList.add('animate-fade-in'), 50);
                         }
+                        // 1. Si hay usuario, cargamos de la nube
                         await this.load(); 
                     } else {
                         this.userId = null;
@@ -531,8 +529,10 @@
                         }
                         getElement('login-view')?.classList.remove('hidden');
                         this.data = { logs: [], config: { rate1: 50, rate2: 75, bathAllow: 15, foodAllow: 45 }, activeShift: null };
+                        
+                        // 2. Solo cargamos local si NO hay usuario
+                        this.loadLocal(); 
                     }
-                    this.loadLocal(); 
                 });
             },
 
@@ -610,7 +610,6 @@
                 const isReal = u && !u.isAnonymous;
                 let t = u ? (u.isAnonymous ? "ANÓNIMO" : (u.displayName || "Usuario")) : "DESCONECTADO";
                 if (isReal && u.email && u.email.includes('@godsplan.site')) t = u.email.split('@')[0];
-                // Nota: user-name no existe en el HTML proporcionado, pero lo dejo por compatibilidad
             },
 
             loadLocal() { const d = localStorage.getItem('godsPlanData'); if (d) { try { this.data = JSON.parse(d); this.render(); this.uiClock(); } catch (e) { } } },
@@ -634,7 +633,7 @@
             async save() {
                 localStorage.setItem('godsPlanData', JSON.stringify(this.data));
                 if (!this.offline && this.userId) {
-                    await setDoc(doc(db, "users", this.userId, "attendance", "sync_state"), this.data);
+                    await setDoc(doc(db, "users", this.userId, "attendance", "sync_state"), this.data, { merge: true });
                 }
             },
             
@@ -746,7 +745,7 @@
             },
             
             // --- TIME & CALCULATIONS ---
-            fmt(m) { const a = Math.abs(m); return `${m < 0 ? '-' : ''}${Math.floor(a / 60)}:${Math.floor(a % 60).toString().padStart(2, '0')}`; },
+            fmt(m) { const r = Math.round(m); const a = Math.abs(r); return `${r < 0 ? '-' : ''}${Math.floor(a / 60)}:${(a % 60).toString().padStart(2, '0')}`; },
             fmtBreak(m) { return `${Math.floor(m).toString().padStart(2, '0')}:${Math.floor((m % 1) * 60).toString().padStart(2, '0')}`; },
             msToTime(ms) { const s = Math.floor(ms / 1000), m = Math.floor(s / 60), h = Math.floor(m / 60); return `${h}:${(m % 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`; },
             getWeek(d) { d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7)); var y = new Date(Date.UTC(d.getUTCFullYear(), 0, 1)); return Math.ceil((((d - y) / 86400000) + 1) / 7); },
