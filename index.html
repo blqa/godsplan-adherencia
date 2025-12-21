@@ -202,27 +202,11 @@
     <!-- FONDOS GLOBALES -->
     <div class="aurora-bg"></div>
     <div class="grid-bg"></div>
-
-    <!-- ============================================ -->
+    
     <!--             VISTA 1: LOGIN / REGISTER       -->
-    <!-- ============================================ -->
+    
     <div id="login-view" class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-[#030000]">
         
-        <!-- Logo Flotante -->
-        <div class="absolute top-8 left-8 flex items-center gap-3 animate-fade-in opacity-50">
-             <div class="relative w-8 h-8 flex items-center justify-center">
-                <i class="ph-fill ph-planet text-2xl text-brand"></i>
-            </div>
-            <span class="font-bold tracking-widest text-lg">GOD'S PLAN</span>
-        </div>
-
-        <div class="w-full max-w-md animate-float">
-            <div class="text-center mb-8">
-                <h1 class="text-4xl md:text-5xl font-black tracking-tight mb-2">GOD'S PLAN</h1>
-                <p class="text-zinc-500 text-sm font-mono tracking-widest uppercase">Portal de Acceso Centralizado</p>
-            </div>
-
-            <div class="glass-panel rounded-3xl p-8 relative overflow-hidden">
                 <!-- Luces decorativas internas -->
                 <div class="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-1 bg-brand blur-md opacity-50"></div>
 
@@ -266,71 +250,15 @@
                         <i class="ph-bold ph-arrow-right group-hover:translate-x-1 transition-transform"></i>
                     </button>
                 </form>
-
-                <div class="relative my-6 text-center">
-                    <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-white/10"></div></div>
-                    <span class="relative bg-[#0a0a0a] px-2 text-[10px] text-zinc-600 font-bold uppercase tracking-widest">O accede con</span>
-                </div>
-
-                <!-- Botón Google -->
-                <button onclick="window.app.loginGoogle()" class="w-full bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/30 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-3 group cursor-pointer">
-                    <i class="ph-bold ph-google-logo text-xl group-hover:text-brand transition-colors"></i>
-                    <span>Google Account</span>
-                </button>
-            </div>
-        </div>
         
         <footer class="absolute bottom-4 left-0 w-full text-center pointer-events-none opacity-30">
             <p class="text-[10px] font-mono tracking-[0.5em] text-white">SYSTEM v2.0 // SECURE</p>
         </footer>
     </div>
 
-
-    <!-- ============================================ -->
     <!--             VISTA 2: APP PRINCIPAL          -->
-    <!-- ============================================ -->
     <div id="app-view" class="hidden min-h-screen pb-24 pt-20">
 
-        <!-- HEADER FIJO -->
-        <nav class="fixed top-0 left-0 w-full z-[100] border-b border-white/5 bg-[var(--header-bg)] backdrop-blur-md h-20 flex items-center shadow-lg transition-all duration-300">
-            <div class="w-full max-w-7xl mx-auto px-4 md:px-6 flex justify-between items-center h-full">
-                <!-- Logo -->
-                <a href="#" class="flex items-center gap-3 group">
-                    <div class="relative w-9 h-9 flex items-center justify-center">
-                        <div class="absolute inset-0 bg-brand rounded-full blur opacity-20 group-hover:opacity-40 transition-opacity"></div>
-                        <i class="ph-fill ph-planet text-3xl text-brand relative z-10"></i>
-                    </div>
-                    <div class="flex flex-col justify-center">
-                        <span class="font-bold tracking-widest text-lg text-white leading-none">GOD'S PLAN</span>
-                        <span class="text-[0.6rem] text-zinc-400 font-mono tracking-widest uppercase hidden sm:block">System v2.5</span>
-                    </div>
-                </a>
-
-                <!-- Navegación Central (Desktop) -->
-                <div class="hidden md:flex items-center bg-white/5 rounded-full p-1 border border-white/5">
-                    <a href="#" class="px-4 py-1.5 rounded-full bg-brand text-white text-xs font-bold tracking-wide shadow-lg shadow-brand/20 transition-all">ADHERENCIA</a>
-                    <a href="/corpo/finanzas.html" class="px-4 py-1.5 rounded-full text-zinc-400 hover:text-white hover:bg-white/5 text-xs font-bold tracking-wide transition-all">FINANZAS</a>
-                    <a href="/corpo/cuenta.html" class="px-4 py-1.5 rounded-full text-zinc-400 hover:text-white hover:bg-white/5 text-xs font-bold tracking-wide transition-all">CUENTA</a>
-                </div>
-
-                <!-- User Badge -->
-                <div id="user-badge" class="flex items-center gap-2 animate-fade-in pl-4 border-l border-white/10 ml-2">
-                    <div class="hidden lg:flex flex-col text-right mr-2">
-                        <span id="user-name" class="text-xs font-bold text-white uppercase tracking-wider max-w-[100px] truncate">Usuario</span>
-                        <span id="user-role" class="text-[9px] font-mono text-emerald-500 tracking-wide">ONLINE</span>
-                    </div>
-
-                    <button onclick="window.app.logout()" class="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-zinc-400 hover:bg-red-500/10 hover:border-red-500/50 hover:text-red-500 transition-all group cursor-pointer" title="Cerrar Sesión">
-                        <i class="ph-bold ph-power text-lg group-hover:scale-110 transition-transform"></i>
-                    </button>
-                </div>
-                
-                <!-- Mobile Menu Toggle -->
-                <button class="md:hidden w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-zinc-400 hover:bg-white/10 hover:text-white transition-colors" onclick="window.app.openNavModal()">
-                     <i class="ph-bold ph-list text-lg"></i>
-                </button>
-            </div>
-        </nav>
 
         <!-- HEADER APP -->
         <header class="bg-card border-b border-border py-2.5 px-4 sticky top-20 z-40 flex justify-between items-center shadow-sm flex-wrap gap-2.5 transition-all">
@@ -804,16 +732,6 @@
                         btn.disabled = false;
                         btn.innerHTML = `<span>${this.isRegistering ? 'CREAR CUENTA' : 'INICIAR SESIÓN'}</span> <i class="ph-bold ph-arrow-right"></i>`;
                     }
-                }
-            },
-
-            async loginGoogle() {
-                const provider = new GoogleAuthProvider();
-                try {
-                    await signInWithPopup(auth, provider);
-                } catch (error) {
-                    console.error("Google Error:", error);
-                    this.showAuthError("Error con Google. Intenta más tarde.");
                 }
             },
 
