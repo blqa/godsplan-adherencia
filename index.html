@@ -11,7 +11,7 @@
     <link rel="icon" href="./favicon.ico?v=2" type="image/x-icon">
 
     <!-- FUENTE UNIFICADA: PLUS JAKARTA SANS -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     
     <!-- TAILWIND CSS & CONFIGURACIÓN DE TEMA -->
@@ -26,7 +26,7 @@
                         card: 'var(--card)',
                         text: 'var(--text)',
                         'text-mute': 'var(--text-mute)',
-                        brand: 'var(--brand)',
+                        brand: 'var(--brand)', // Rojo Sangre App
                         money: 'var(--money)',
                         alert: 'var(--alert)',
                         warn: 'var(--warn)',
@@ -39,11 +39,26 @@
                     },
                     animation: {
                         'slide-up': 'slideUp 0.3s ease-out forwards',
+                        'nebula': 'nebula 20s infinite alternate',
+                        'float': 'float 6s ease-in-out infinite',
+                        'fade-in': 'fadeIn 0.5s ease-out forwards',
                     },
                     keyframes: {
                         slideUp: {
                             '0%': { transform: 'translateY(100%)' },
                             '100%': { transform: 'translateY(0)' },
+                        },
+                        nebula: {
+                            '0%': { transform: 'scale(1)', opacity: '0.3' },
+                            '100%': { transform: 'scale(1.2)', opacity: '0.6' }
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' }
+                        },
+                        fadeIn: { 
+                            from: { opacity: 0, transform: 'translateY(-5px)' }, 
+                            to: { opacity: 1, transform: 'translateY(0)' } 
                         }
                     }
                 }
@@ -72,7 +87,8 @@
             --card: #111111;
             --text: #e5e5e5;
             --text-mute: #737373;
-            --brand: #dc2626;  /* Rojo Sangre */
+            --brand: #dc2626;  /* Rojo Sangre App */
+            --login-brand: #E70000; /* Rojo Login */
             --money: #16a34a;
             --alert: #b91c1c;
             --warn: #d97706;
@@ -83,6 +99,7 @@
 
         /* RESET & UTILIDADES ESPECÍFICAS */
         * { -webkit-tap-highlight-color: transparent; outline: none; transition: background-color 0.3s, color 0.3s, border-color 0.3s; }
+        body { overflow-x: hidden; }
         
         /* Ocultar scrollbar en navegación */
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -93,208 +110,364 @@
         .animate-pulse-custom { animation: pulse 2s infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .spinner { border: 4px solid var(--border); border-top: 4px solid var(--brand); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
 
-        /* ESTADOS ACTIVOS COMPLEJOS */
+        /* --- ESTILOS DEL LOGIN --- */
+        .aurora-bg {
+            position: fixed; inset: 0; z-index: -2;
+            background: 
+                radial-gradient(circle at 50% 50%, rgba(50, 0, 0, 0.4) 0%, transparent 60%),
+                radial-gradient(circle at 80% 20%, rgba(231, 0, 0, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 20% 80%, rgba(100, 0, 0, 0.2) 0%, transparent 40%);
+            filter: blur(80px);
+            animation: nebula 15s infinite alternate ease-in-out;
+            pointer-events: none;
+        }
+
+        .grid-bg {
+            position: fixed; inset: 0; z-index: -1;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
+            pointer-events: none;
+        }
+
+        .input-gp {
+            background: rgba(255,255,255,0.03); 
+            border: 1px solid rgba(255,255,255,0.1); 
+            color: white;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            width: 100%; padding: 14px 16px; border-radius: 16px;
+            font-size: 0.95rem; font-weight: 500;
+        }
+        .input-gp:focus { 
+            border-color: #E70000; 
+            outline: none; 
+            background: rgba(231,0,0,0.05); 
+            box-shadow: 0 0 20px rgba(231,0,0,0.2);
+            transform: translateY(-2px);
+        }
+        .input-gp::placeholder { color: rgba(255,255,255,0.3); }
+
+        .glass-panel {
+            background: rgba(15, 15, 15, 0.6);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .auth-switch {
+            position: relative; display: flex; background: rgba(0,0,0,0.3);
+            border-radius: 12px; padding: 4px; margin-bottom: 24px;
+        }
+        .auth-switch button {
+            flex: 1; padding: 8px; font-size: 0.8rem; font-weight: 700; z-index: 1;
+            color: #666; transition: 0.3s;
+        }
+        .auth-switch button.active { color: white; }
+        .auth-switch-glider {
+            position: absolute; top: 4px; left: 4px; height: calc(100% - 8px); width: calc(50% - 4px);
+            background: #222; border-radius: 8px; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .auth-mode-register .auth-switch-glider { transform: translateX(100%); }
+
+        .btn-glow {
+            position: relative; overflow: hidden;
+            background: #E70000; color: white;
+            transition: all 0.3s;
+        }
+        .btn-glow:hover {
+            box-shadow: 0 0 30px rgba(231, 0, 0, 0.4);
+            transform: translateY(-2px);
+        }
+
+        /* --- ESTILOS APP --- */
         .g-link.active { color: #fff; border-bottom: 2px solid #fff; padding-bottom: 2px; }
-        
-        /* Botones de control de tiempo activos */
         .btn-ctrl.active-bath { background: var(--card); color: var(--brand) !important; border-color: var(--brand) !important; box-shadow: inset 0 0 0 1px var(--brand); }
         .btn-ctrl.active-food { background: var(--card); color: var(--warn) !important; border-color: var(--warn) !important; box-shadow: inset 0 0 0 1px var(--warn); }
         .btn-ctrl.active-pause { background: #451a03; color: #fb923c !important; border-color: #fb923c !important; box-shadow: inset 0 0 0 1px #f97316; }
-        
         .side-clock.active { opacity: 1; transform: scale(1.05); background: transparent; }
         .side-clock.danger .side-val { color: var(--alert) !important; }
-        
-        /* Tabs del modal (Estilo Segmentado Moderno) */
         .tab { @apply text-text-mute rounded-md transition-all; }
         .tab.active { @apply bg-white/10 text-white shadow-sm ring-1 ring-white/10 font-bold; }
-        
-        /* Ajuste para inputs en modo oscuro para que sean legibles */
         input, select, textarea { color: var(--text) !important; }
     </style>
 </head>
 
-<body class="bg-bg text-text font-sans pb-24 pt-20 text-sm font-normal selection:bg-brand selection:text-white">
+<body class="bg-bg text-text font-sans selection:bg-brand selection:text-white min-h-screen">
 
-    <!-- HEADER FIJO -->
-    <nav class="fixed top-0 left-0 w-full z-[100] border-b border-white/5 bg-[var(--header-bg)] backdrop-blur-md h-20 flex items-center shadow-lg transition-all duration-300">
-        <div class="w-full max-w-7xl mx-auto px-4 md:px-6 flex justify-between items-center h-full">
-            <!-- Logo (ICONO + TEXTO AGRUPADOS EN EL LINK) -->
-            <a href="/corpo/index.html" class="flex items-center gap-3 group">
-                <div class="relative w-9 h-9 flex items-center justify-center">
-                    <div class="absolute inset-0 bg-brand rounded-full blur opacity-20 group-hover:opacity-40 transition-opacity"></div>
-                    <i class="ph-fill ph-planet text-3xl text-brand relative z-10"></i>
-                </div>
-                <div class="flex flex-col justify-center">
-                    <span class="font-bold tracking-widest text-lg text-white leading-none">GOD'S PLAN</span>
-                    <span class="text-[0.6rem] text-zinc-400 font-mono tracking-widest uppercase hidden sm:block">System v2.5</span>
-                </div>
-            </a>
+    <!-- FONDOS GLOBALES -->
+    <div class="aurora-bg"></div>
+    <div class="grid-bg"></div>
 
-            <!-- Navegación Central (Desktop) -->
-            <div class="hidden md:flex items-center bg-white/5 rounded-full p-1 border border-white/5">
-                <a href="#" class="px-4 py-1.5 rounded-full bg-brand text-white text-xs font-bold tracking-wide shadow-lg shadow-brand/20 transition-all">ADHERENCIA</a>
-                <a href="/corpo/finanzas.html" class="px-4 py-1.5 rounded-full text-zinc-400 hover:text-white hover:bg-white/5 text-xs font-bold tracking-wide transition-all">FINANZAS</a>
-                <a href="/corpo/cuenta.html" class="px-4 py-1.5 rounded-full text-zinc-400 hover:text-white hover:bg-white/5 text-xs font-bold tracking-wide transition-all">CUENTA</a>
+    <!-- ============================================ -->
+    <!--             VISTA 1: LOGIN / REGISTER       -->
+    <!-- ============================================ -->
+    <div id="login-view" class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-[#030000]">
+        
+        <!-- Logo Flotante -->
+        <div class="absolute top-8 left-8 flex items-center gap-3 animate-fade-in opacity-50">
+             <div class="relative w-8 h-8 flex items-center justify-center">
+                <i class="ph-fill ph-planet text-2xl text-brand"></i>
             </div>
-
-            <!-- User Badge -->
-            <div id="user-badge" class="hidden items-center gap-2 animate-fade-in pl-4 border-l border-white/10 ml-2">
-                <div class="hidden lg:flex flex-col text-right mr-2">
-                    <span id="user-name" class="text-xs font-bold text-white uppercase tracking-wider max-w-[100px] truncate">Usuario</span>
-                    <span id="user-role" class="text-[9px] font-mono text-emerald-500 tracking-wide">SYSTEM ACCESS</span>
-                </div>
-
-                <button onclick="window.app.logout()" class="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-zinc-400 hover:bg-red-500/10 hover:border-red-500/50 hover:text-red-500 transition-all group" title="Cerrar Sesión">
-                    <i class="ph-bold ph-power text-lg group-hover:scale-110 transition-transform"></i>
-                </button>
-            </div>
-            
-            <!-- Mobile Menu Toggle (MODIFICADO) -->
-            <button class="md:hidden w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-zinc-400 hover:bg-white/10 hover:text-white transition-colors" onclick="window.app.openNavModal()">
-                 <i class="ph-bold ph-list text-lg"></i>
-            </button>
+            <span class="font-bold tracking-widest text-lg">GOD'S PLAN</span>
         </div>
-    </nav>
 
-    <!-- HEADER APP -->
-    <header class="bg-card border-b border-border py-2.5 px-4 sticky top-20 z-40 flex justify-between items-center shadow-sm flex-wrap gap-2.5 transition-all">
-        <div class="text-[1.1rem] font-extrabold flex items-center gap-2 text-text uppercase">
-            <i class="ph-fill ph-check-circle text-brand"></i> <span class="hidden sm:inline">Panel de Control</span>
-        </div>
-        <div class="flex items-center gap-2 flex-wrap justify-end flex-1 md:flex-none">
-            <!-- RELOJ REAL CDMX -->
-            <div id="realWorldClock" class="flex flex-col items-end mr-1 px-2 py-0.5 border-r border-border/50 min-w-[70px]">
-                <div class="text-[0.6rem] text-text-mute font-black tracking-wider leading-none mb-0.5 flex items-center gap-1 justify-end">
-                      <span id="syncDot" class="w-1.5 h-1.5 rounded-full bg-red-500 inline-block"></span> CDMX
+        <div class="w-full max-w-md animate-float">
+            <div class="text-center mb-8">
+                <h1 class="text-4xl md:text-5xl font-black tracking-tight mb-2">GOD'S PLAN</h1>
+                <p class="text-zinc-500 text-sm font-mono tracking-widest uppercase">Portal de Acceso Centralizado</p>
+            </div>
+
+            <div class="glass-panel rounded-3xl p-8 relative overflow-hidden">
+                <!-- Luces decorativas internas -->
+                <div class="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-1 bg-brand blur-md opacity-50"></div>
+
+                <!-- Switcher -->
+                <div class="auth-switch" id="auth-switch-container">
+                    <div class="auth-switch-glider"></div>
+                    <button onclick="window.app.toggleAuth('login')" id="tab-login" class="active">INGRESAR</button>
+                    <button onclick="window.app.toggleAuth('register')" id="tab-register">REGISTRARSE</button>
                 </div>
-                <div class="text-[0.9rem] font-mono font-bold text-text leading-none tabular-nums text-right" id="realClockTime">--:--:--</div>
-            </div>
 
-            <button class="bg-transparent border border-border text-text-mute text-base p-1.5 rounded-lg flex items-center justify-center hover:bg-bg hover:text-text" onclick="window.app.syncData()" title="Sincronizar"><i class="ph-bold ph-arrows-clockwise"></i></button>
-            <button class="bg-transparent border border-border text-text-mute text-base p-1.5 rounded-lg flex items-center justify-center hover:bg-bg hover:text-text" onclick="window.app.openConfigModal()" title="Menú"><i class="ph-bold ph-gear"></i></button>
-            
-            <div class="flex items-center gap-1 bg-bg px-2 py-1 rounded-full border border-border">
-                <button class="bg-transparent border-none text-text-mute cursor-pointer text-[1.1rem] p-1 rounded-full flex items-center justify-center hover:text-text" onclick="window.app.changeMonth(-1)"><i class="ph-bold ph-caret-left"></i></button>
-                <span class="text-[0.85rem] font-extrabold uppercase text-text min-w-[75px] text-center" id="monthLabel">--</span>
-                <button class="bg-transparent border-none text-text-mute cursor-pointer text-[1.1rem] p-1 rounded-full flex items-center justify-center hover:text-text" onclick="window.app.changeMonth(1)"><i class="ph-bold ph-caret-right"></i></button>
-                <button class="bg-transparent border-none text-brand cursor-pointer text-[1.1rem] p-1 rounded-full flex items-center justify-center hover:scale-110 transition-transform" onclick="window.app.goToday()"><i class="ph-bold ph-calendar-check"></i></button>
-            </div>
-        </div>
-    </header>
-
-    <div class="w-full max-w-[900px] mx-auto p-4 overflow-x-hidden">
-        <div id="auth-status" class="text-center text-[0.85rem] text-text-mute mx-auto mb-5 py-2.5 px-4 w-fit bg-card border border-border rounded-full hidden items-center justify-center gap-2.5 shadow-sm">Conectando...</div>
-
-        <!-- RELOJ -->
-        <div class="bg-card rounded-2xl border border-border py-5 px-2.5 text-center mb-5 shadow-sm relative overflow-hidden">
-            <div id="mainLoader" class="absolute inset-0 bg-card/90 flex items-center justify-center z-10 rounded-2xl hidden">
-                <div class="spinner"></div>
-            </div>
-
-            <!-- Timer Grid -->
-            <div class="grid grid-cols-[1fr_1.2fr_1fr] items-center gap-1.5 mb-5" id="timersDisplay" style="display:none;">
-                <!-- Baño -->
-                <button class="side-clock flex flex-col items-center justify-center opacity-50 p-1.5 rounded-lg relative z-10 w-full h-full border-none hover:bg-bg hover:opacity-100 hover:scale-105 transition-all cursor-pointer" id="clockBathContainer" onclick="window.app.openTimerEdit('bathroom')" type="button">
-                    <div class="text-[0.65rem] font-extrabold uppercase text-text-mute mb-1 flex items-center justify-center gap-1">
-                        <i class="ph-bold ph-toilet"></i> Baño <i class="ph-bold ph-pencil-simple text-brand text-[0.9em]"></i>
-                    </div>
-                    <div class="font-mono font-bold text-base text-text tabular-nums" id="dispBath">00:00</div>
-                    <div class="text-[0.65rem] text-text-mute mt-0.5">/ <span id="limBath">15</span>m</div>
-                    <div id="remBath" class="text-[0.7rem] font-extrabold mt-1 text-money">Restan: --</div>
-                </button>
-                
-                <!-- Reloj Principal -->
-                <div class="flex flex-col items-center">
-                    <div class="text-[0.7rem] uppercase tracking-widest text-text-mute font-extrabold mb-1.5" id="clockStatus">TURNO ACTIVO</div>
-                    <div class="text-[clamp(2.5rem,12vw,4rem)] font-extrabold text-text tabular-nums leading-none" id="clockDisplay">00:00</div>
+                <form onsubmit="event.preventDefault(); window.app.handleAuthSubmit();" class="flex flex-col gap-5">
                     
-                    <div id="shiftStartTime" class="text-[0.7rem] text-text-mute font-bold mt-1.5 uppercase tracking-wide opacity-80" style="display:none;">
-                        ENTRADA: --:--
+                    <!-- Campo Nombre (Solo Registro) -->
+                    <div id="field-name" class="hidden transition-all duration-300">
+                        <div class="relative group">
+                            <i class="ph-bold ph-user absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-brand transition-colors"></i>
+                            <input type="text" id="input-name" class="input-gp pl-12" placeholder="Tu Nombre">
+                        </div>
                     </div>
 
-                    <div id="networkTimeBadge" class="text-[0.65rem] text-money font-bold mt-1.5 opacity-0 transition-opacity duration-500">
-                        <i class="ph-bold ph-globe"></i> Local
+                    <!-- Campo ID/Email -->
+                    <div class="relative group">
+                        <i class="ph-bold ph-identification-card absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-brand transition-colors"></i>
+                        <input type="text" id="input-id" class="input-gp pl-12" placeholder="ID (Ej: 17620) o Email" required>
                     </div>
+
+                    <!-- Campo Password -->
+                    <div class="relative group">
+                        <i class="ph-bold ph-lock-key absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-brand transition-colors"></i>
+                        <input type="password" id="input-pass" class="input-gp pl-12" placeholder="Contraseña Maestra" required>
+                    </div>
+
+                    <!-- Mensaje Error -->
+                    <div id="auth-error-msg" class="hidden p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-xs font-bold text-center flex items-center justify-center gap-2">
+                        <i class="ph-fill ph-warning-circle"></i> <span id="auth-error-txt">Error</span>
+                    </div>
+
+                    <!-- Botón Acción -->
+                    <button type="submit" id="btn-submit" class="btn-glow w-full py-4 rounded-xl font-black uppercase tracking-widest text-sm mt-2 flex items-center justify-center gap-2 group cursor-pointer">
+                        <span id="btn-text">INICIAR SESIÓN</span>
+                        <i class="ph-bold ph-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                    </button>
+                </form>
+
+                <div class="relative my-6 text-center">
+                    <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-white/10"></div></div>
+                    <span class="relative bg-[#0a0a0a] px-2 text-[10px] text-zinc-600 font-bold uppercase tracking-widest">O accede con</span>
                 </div>
 
-                <!-- Comida -->
-                <button class="side-clock flex flex-col items-center justify-center opacity-50 p-1.5 rounded-lg relative z-10 w-full h-full border-none hover:bg-bg hover:opacity-100 hover:scale-105 transition-all cursor-pointer" id="clockFoodContainer" onclick="window.app.openTimerEdit('food')" type="button">
-                    <div class="text-[0.65rem] font-extrabold uppercase text-text-mute mb-1 flex items-center justify-center gap-1">
-                        <i class="ph-bold ph-hamburger"></i> Comida <i class="ph-bold ph-pencil-simple text-brand text-[0.9em]"></i>
-                    </div>
-                    <div class="font-mono font-bold text-base text-text tabular-nums" id="dispFood">00:00</div>
-                    <div class="text-[0.65rem] text-text-mute mt-0.5">/ <span id="limFood">45</span>m</div>
-                    <div id="remFood" class="text-[0.7rem] font-extrabold mt-1 text-money">Restan: --</div>
+                <!-- Botón Google -->
+                <button onclick="window.app.loginGoogle()" class="w-full bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/30 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-3 group cursor-pointer">
+                    <i class="ph-bold ph-google-logo text-xl group-hover:text-brand transition-colors"></i>
+                    <span>Google Account</span>
                 </button>
             </div>
-
-            <!-- Offline Display -->
-            <div id="offlineDisplay" style="display:block;">
-                <div class="text-[0.7rem] uppercase tracking-widest text-text-mute font-extrabold mb-2.5">FUERA DE TURNO</div>
-                <div class="text-[clamp(2.5rem,12vw,4rem)] font-extrabold text-text-mute tabular-nums leading-none mb-5">--:--:--</div>
-            </div>
-
-            <!-- Botones de Acción -->
-            <div class="grid grid-cols-2 gap-2.5 mt-4" id="actionButtons"></div>
         </div>
+        
+        <footer class="absolute bottom-4 left-0 w-full text-center pointer-events-none opacity-30">
+            <p class="text-[10px] font-mono tracking-[0.5em] text-white">SYSTEM v2.0 // SECURE</p>
+        </footer>
+    </div>
 
-        <!-- KPIs -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <!-- Semanal -->
-            <div class="bg-card border border-border rounded-xl p-4">
-                <div class="flex justify-between items-center mb-2.5 pb-2 border-b border-border">
-                    <div class="flex items-center gap-2">
-                        <button class="bg-transparent border-none text-brand cursor-pointer text-base p-0 hover:text-white" onclick="window.app.changeWeek(-1)"><i class="ph-bold ph-caret-left"></i></button>
-                        <span class="text-[0.9rem] font-extrabold text-text">Semana <span id="weekNum">--</span></span>
-                        <button class="bg-transparent border-none text-brand cursor-pointer text-base p-0 hover:text-white" onclick="window.app.changeWeek(1)"><i class="ph-bold ph-caret-right"></i></button>
+
+    <!-- ============================================ -->
+    <!--             VISTA 2: APP PRINCIPAL          -->
+    <!-- ============================================ -->
+    <div id="app-view" class="hidden min-h-screen pb-24 pt-20">
+
+        <!-- HEADER FIJO -->
+        <nav class="fixed top-0 left-0 w-full z-[100] border-b border-white/5 bg-[var(--header-bg)] backdrop-blur-md h-20 flex items-center shadow-lg transition-all duration-300">
+            <div class="w-full max-w-7xl mx-auto px-4 md:px-6 flex justify-between items-center h-full">
+                <!-- Logo -->
+                <a href="#" class="flex items-center gap-3 group">
+                    <div class="relative w-9 h-9 flex items-center justify-center">
+                        <div class="absolute inset-0 bg-brand rounded-full blur opacity-20 group-hover:opacity-40 transition-opacity"></div>
+                        <i class="ph-fill ph-planet text-3xl text-brand relative z-10"></i>
                     </div>
-                    <span id="weekBalance" class="px-2 py-0.5 rounded-md font-extrabold text-[0.8rem] bg-emerald-900/30 text-emerald-400">0h</span>
+                    <div class="flex flex-col justify-center">
+                        <span class="font-bold tracking-widest text-lg text-white leading-none">GOD'S PLAN</span>
+                        <span class="text-[0.6rem] text-zinc-400 font-mono tracking-widest uppercase hidden sm:block">System v2.5</span>
+                    </div>
+                </a>
+
+                <!-- Navegación Central (Desktop) -->
+                <div class="hidden md:flex items-center bg-white/5 rounded-full p-1 border border-white/5">
+                    <a href="#" class="px-4 py-1.5 rounded-full bg-brand text-white text-xs font-bold tracking-wide shadow-lg shadow-brand/20 transition-all">ADHERENCIA</a>
+                    <a href="/corpo/finanzas.html" class="px-4 py-1.5 rounded-full text-zinc-400 hover:text-white hover:bg-white/5 text-xs font-bold tracking-wide transition-all">FINANZAS</a>
+                    <a href="/corpo/cuenta.html" class="px-4 py-1.5 rounded-full text-zinc-400 hover:text-white hover:bg-white/5 text-xs font-bold tracking-wide transition-all">CUENTA</a>
                 </div>
-                <div class="flex justify-between items-center mb-1 text-[0.9rem]"><span class="text-text-mute">Meta</span><strong id="weekTarget" class="text-text">0:00</strong></div>
-                <div class="flex justify-between items-center mb-1 text-[0.9rem]"><span class="text-text-mute">Trabajado</span><strong class="text-brand" id="weekWorked">0:00</strong></div>
-                <div class="flex justify-between items-center mt-2.5 pt-1.5 border-t border-dashed border-border text-[0.9rem]">
-                    <span class="text-text-mute">Pago Extra</span><strong class="text-money" id="weekPay">$0</strong>
+
+                <!-- User Badge -->
+                <div id="user-badge" class="flex items-center gap-2 animate-fade-in pl-4 border-l border-white/10 ml-2">
+                    <div class="hidden lg:flex flex-col text-right mr-2">
+                        <span id="user-name" class="text-xs font-bold text-white uppercase tracking-wider max-w-[100px] truncate">Usuario</span>
+                        <span id="user-role" class="text-[9px] font-mono text-emerald-500 tracking-wide">ONLINE</span>
+                    </div>
+
+                    <button onclick="window.app.logout()" class="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-zinc-400 hover:bg-red-500/10 hover:border-red-500/50 hover:text-red-500 transition-all group cursor-pointer" title="Cerrar Sesión">
+                        <i class="ph-bold ph-power text-lg group-hover:scale-110 transition-transform"></i>
+                    </button>
+                </div>
+                
+                <!-- Mobile Menu Toggle -->
+                <button class="md:hidden w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-zinc-400 hover:bg-white/10 hover:text-white transition-colors" onclick="window.app.openNavModal()">
+                     <i class="ph-bold ph-list text-lg"></i>
+                </button>
+            </div>
+        </nav>
+
+        <!-- HEADER APP -->
+        <header class="bg-card border-b border-border py-2.5 px-4 sticky top-20 z-40 flex justify-between items-center shadow-sm flex-wrap gap-2.5 transition-all">
+            <div class="text-[1.1rem] font-extrabold flex items-center gap-2 text-text uppercase">
+                <i class="ph-fill ph-check-circle text-brand"></i> <span class="hidden sm:inline">Panel de Control</span>
+            </div>
+            <div class="flex items-center gap-2 flex-wrap justify-end flex-1 md:flex-none">
+                <!-- RELOJ REAL CDMX -->
+                <div id="realWorldClock" class="flex flex-col items-end mr-1 px-2 py-0.5 border-r border-border/50 min-w-[70px]">
+                    <div class="text-[0.6rem] text-text-mute font-black tracking-wider leading-none mb-0.5 flex items-center gap-1 justify-end">
+                          <span id="syncDot" class="w-1.5 h-1.5 rounded-full bg-red-500 inline-block"></span> CDMX
+                    </div>
+                    <div class="text-[0.9rem] font-mono font-bold text-text leading-none tabular-nums text-right" id="realClockTime">--:--:--</div>
+                </div>
+
+                <button class="bg-transparent border border-border text-text-mute text-base p-1.5 rounded-lg flex items-center justify-center hover:bg-bg hover:text-text cursor-pointer" onclick="window.app.syncData()" title="Sincronizar"><i class="ph-bold ph-arrows-clockwise"></i></button>
+                <button class="bg-transparent border border-border text-text-mute text-base p-1.5 rounded-lg flex items-center justify-center hover:bg-bg hover:text-text cursor-pointer" onclick="window.app.openConfigModal()" title="Menú"><i class="ph-bold ph-gear"></i></button>
+                
+                <div class="flex items-center gap-1 bg-bg px-2 py-1 rounded-full border border-border">
+                    <button class="bg-transparent border-none text-text-mute cursor-pointer text-[1.1rem] p-1 rounded-full flex items-center justify-center hover:text-text" onclick="window.app.changeMonth(-1)"><i class="ph-bold ph-caret-left"></i></button>
+                    <span class="text-[0.85rem] font-extrabold uppercase text-text min-w-[75px] text-center" id="monthLabel">--</span>
+                    <button class="bg-transparent border-none text-text-mute cursor-pointer text-[1.1rem] p-1 rounded-full flex items-center justify-center hover:text-text" onclick="window.app.changeMonth(1)"><i class="ph-bold ph-caret-right"></i></button>
+                    <button class="bg-transparent border-none text-brand cursor-pointer text-[1.1rem] p-1 rounded-full flex items-center justify-center hover:scale-110 transition-transform" onclick="window.app.goToday()"><i class="ph-bold ph-calendar-check"></i></button>
+                </div>
+            </div>
+        </header>
+
+        <div class="w-full max-w-[900px] mx-auto p-4 overflow-x-hidden">
+            <!-- RELOJ PRINCIPAL DE LA APP -->
+            <div class="bg-card rounded-2xl border border-border py-5 px-2.5 text-center mb-5 shadow-sm relative overflow-hidden">
+                <div id="mainLoader" class="absolute inset-0 bg-card/90 flex items-center justify-center z-10 rounded-2xl hidden">
+                    <div class="spinner"></div>
+                </div>
+
+                <!-- Timer Grid -->
+                <div class="grid grid-cols-[1fr_1.2fr_1fr] items-center gap-1.5 mb-5" id="timersDisplay" style="display:none;">
+                    <!-- Baño -->
+                    <button class="side-clock flex flex-col items-center justify-center opacity-50 p-1.5 rounded-lg relative z-10 w-full h-full border-none hover:bg-bg hover:opacity-100 hover:scale-105 transition-all cursor-pointer" id="clockBathContainer" onclick="window.app.openTimerEdit('bathroom')" type="button">
+                        <div class="text-[0.65rem] font-extrabold uppercase text-text-mute mb-1 flex items-center justify-center gap-1">
+                            <i class="ph-bold ph-toilet"></i> Baño <i class="ph-bold ph-pencil-simple text-brand text-[0.9em]"></i>
+                        </div>
+                        <div class="font-mono font-bold text-base text-text tabular-nums" id="dispBath">00:00</div>
+                        <div class="text-[0.65rem] text-text-mute mt-0.5">/ <span id="limBath">15</span>m</div>
+                        <div id="remBath" class="text-[0.7rem] font-extrabold mt-1 text-money">Restan: --</div>
+                    </button>
+                    
+                    <!-- Reloj Principal -->
+                    <div class="flex flex-col items-center">
+                        <div class="text-[0.7rem] uppercase tracking-widest text-text-mute font-extrabold mb-1.5" id="clockStatus">TURNO ACTIVO</div>
+                        <div class="text-[clamp(2.5rem,12vw,4rem)] font-extrabold text-text tabular-nums leading-none" id="clockDisplay">00:00</div>
+                        
+                        <div id="shiftStartTime" class="text-[0.7rem] text-text-mute font-bold mt-1.5 uppercase tracking-wide opacity-80" style="display:none;">
+                            ENTRADA: --:--
+                        </div>
+
+                        <div id="networkTimeBadge" class="text-[0.65rem] text-money font-bold mt-1.5 opacity-0 transition-opacity duration-500">
+                            <i class="ph-bold ph-globe"></i> Local
+                        </div>
+                    </div>
+
+                    <!-- Comida -->
+                    <button class="side-clock flex flex-col items-center justify-center opacity-50 p-1.5 rounded-lg relative z-10 w-full h-full border-none hover:bg-bg hover:opacity-100 hover:scale-105 transition-all cursor-pointer" id="clockFoodContainer" onclick="window.app.openTimerEdit('food')" type="button">
+                        <div class="text-[0.65rem] font-extrabold uppercase text-text-mute mb-1 flex items-center justify-center gap-1">
+                            <i class="ph-bold ph-hamburger"></i> Comida <i class="ph-bold ph-pencil-simple text-brand text-[0.9em]"></i>
+                        </div>
+                        <div class="font-mono font-bold text-base text-text tabular-nums" id="dispFood">00:00</div>
+                        <div class="text-[0.65rem] text-text-mute mt-0.5">/ <span id="limFood">45</span>m</div>
+                        <div id="remFood" class="text-[0.7rem] font-extrabold mt-1 text-money">Restan: --</div>
+                    </button>
+                </div>
+
+                <!-- Offline Display -->
+                <div id="offlineDisplay" style="display:block;">
+                    <div class="text-[0.7rem] uppercase tracking-widest text-text-mute font-extrabold mb-2.5">FUERA DE TURNO</div>
+                    <div class="text-[clamp(2.5rem,12vw,4rem)] font-extrabold text-text-mute tabular-nums leading-none mb-5">--:--:--</div>
+                </div>
+
+                <!-- Botones de Acción -->
+                <div class="grid grid-cols-2 gap-2.5 mt-4" id="actionButtons"></div>
+            </div>
+
+            <!-- KPIs -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <!-- Semanal -->
+                <div class="bg-card border border-border rounded-xl p-4">
+                    <div class="flex justify-between items-center mb-2.5 pb-2 border-b border-border">
+                        <div class="flex items-center gap-2">
+                            <button class="bg-transparent border-none text-brand cursor-pointer text-base p-0 hover:text-white" onclick="window.app.changeWeek(-1)"><i class="ph-bold ph-caret-left"></i></button>
+                            <span class="text-[0.9rem] font-extrabold text-text">Semana <span id="weekNum">--</span></span>
+                            <button class="bg-transparent border-none text-brand cursor-pointer text-base p-0 hover:text-white" onclick="window.app.changeWeek(1)"><i class="ph-bold ph-caret-right"></i></button>
+                        </div>
+                        <span id="weekBalance" class="px-2 py-0.5 rounded-md font-extrabold text-[0.8rem] bg-emerald-900/30 text-emerald-400">0h</span>
+                    </div>
+                    <div class="flex justify-between items-center mb-1 text-[0.9rem]"><span class="text-text-mute">Meta</span><strong id="weekTarget" class="text-text">0:00</strong></div>
+                    <div class="flex justify-between items-center mb-1 text-[0.9rem]"><span class="text-text-mute">Trabajado</span><strong class="text-brand" id="weekWorked">0:00</strong></div>
+                    <div class="flex justify-between items-center mt-2.5 pt-1.5 border-t border-dashed border-border text-[0.9rem]">
+                        <span class="text-text-mute">Pago Extra</span><strong class="text-money" id="weekPay">$0</strong>
+                    </div>
+                </div>
+
+                <!-- Quincenal -->
+                <div class="bg-card border border-border rounded-xl p-4">
+                    <div class="flex justify-between items-center mb-2.5 pb-2 border-b border-border">
+                        <span class="text-[0.9rem] font-extrabold text-text">Quincena <span id="qName">--</span></span>
+                        <span id="qBalance" class="px-2 py-0.5 rounded-md font-extrabold text-[0.8rem] bg-emerald-900/30 text-emerald-400">0h</span>
+                    </div>
+                    <div class="flex justify-between items-center mb-1 text-[0.9rem]"><span class="text-text-mute">Meta</span><strong id="qTarget" class="text-text">0:00</strong></div>
+                    <div class="flex justify-between items-center mb-1 text-[0.9rem]"><span class="text-text-mute">Trabajado</span><strong class="text-brand" id="qWorked">0:00</strong></div>
+                    <div class="flex justify-between items-center mt-2.5 text-[0.9rem]"><span class="text-alert">Faltas</span><strong class="text-alert" id="qFails">0</strong></div>
                 </div>
             </div>
 
-            <!-- Quincenal -->
-            <div class="bg-card border border-border rounded-xl p-4">
-                <div class="flex justify-between items-center mb-2.5 pb-2 border-b border-border">
-                    <span class="text-[0.9rem] font-extrabold text-text">Quincena <span id="qName">--</span></span>
-                    <span id="qBalance" class="px-2 py-0.5 rounded-md font-extrabold text-[0.8rem] bg-emerald-900/30 text-emerald-400">0h</span>
+            <!-- LISTA HISTORIAL -->
+            <div class="bg-card border border-border rounded-2xl overflow-hidden shadow-sm mb-6">
+                <div class="px-5 py-4 bg-bg/50 font-extrabold text-text-mute text-[0.75rem] border-b border-border flex justify-between items-center tracking-wide">
+                    <span id="logListTitle">HISTORIAL</span>
+                    <button onclick="window.app.openModal()" class="border-none bg-transparent text-brand font-extrabold cursor-pointer hover:underline">+ MANUAL</button>
                 </div>
-                <div class="flex justify-between items-center mb-1 text-[0.9rem]"><span class="text-text-mute">Meta</span><strong id="qTarget" class="text-text">0:00</strong></div>
-                <div class="flex justify-between items-center mb-1 text-[0.9rem]"><span class="text-text-mute">Trabajado</span><strong class="text-brand" id="qWorked">0:00</strong></div>
-                <div class="flex justify-between items-center mt-2.5 text-[0.9rem]"><span class="text-alert">Faltas</span><strong class="text-alert" id="qFails">0</strong></div>
+                <div id="logList"></div>
             </div>
-        </div>
-
-        <!-- LISTA HISTORIAL -->
-        <div class="bg-card border border-border rounded-2xl overflow-hidden shadow-sm mb-6">
-            <div class="px-5 py-4 bg-bg/50 font-extrabold text-text-mute text-[0.75rem] border-b border-border flex justify-between items-center tracking-wide">
-                <span id="logListTitle">HISTORIAL</span>
-                <button onclick="window.app.openModal()" class="border-none bg-transparent text-brand font-extrabold cursor-pointer hover:underline">+ MANUAL</button>
-            </div>
-            <div id="logList"></div>
         </div>
     </div>
 
-    <!-- BOTÓN SCROLL TO TOP (AGREGADO) -->
-    <button id="scrollTopBtn" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="fixed bottom-6 left-6 w-11 h-11 rounded-full bg-brand text-white shadow-lg shadow-brand/20 border border-white/10 z-50 flex items-center justify-center translate-y-20 opacity-0 transition-all duration-300 hover:scale-110">
+
+    <!-- BOTÓN SCROLL TO TOP -->
+    <button id="scrollTopBtn" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="fixed bottom-6 left-6 w-11 h-11 rounded-full bg-brand text-white shadow-lg shadow-brand/20 border border-white/10 z-50 flex items-center justify-center translate-y-20 opacity-0 transition-all duration-300 hover:scale-110 cursor-pointer">
         <i class="ph-bold ph-arrow-up text-xl"></i>
     </button>
 
-    <!-- MODALES -->
+    <!-- ==================== MODALES ==================== -->
     
-    <!-- NUEVO MENU DE NAVEGACION MOVIL (AGREGADO) -->
+    <!-- MENU DE NAVEGACION MOVIL -->
     <div class="modal fixed inset-0 w-screen h-screen z-[1000] hidden bg-black/80 backdrop-blur-sm" id="navModal" onclick="window.app.closeModalById('navModal')">
         <div class="absolute bottom-0 left-0 w-full bg-card rounded-t-2xl p-6 border-t border-border animate-slide-up" onclick="event.stopPropagation()">
             <div class="flex justify-between items-center mb-6">
                 <span class="font-bold text-lg text-text">Navegación</span>
-                 <button onclick="window.app.closeModalById('navModal')" class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 text-text-mute hover:text-text"><i class="ph-bold ph-x text-lg"></i></button>
+                 <button onclick="window.app.closeModalById('navModal')" class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 text-text-mute hover:text-text cursor-pointer"><i class="ph-bold ph-x text-lg"></i></button>
             </div>
             <div class="grid gap-3">
                 <a href="#" class="p-3.5 rounded-xl bg-brand/10 text-brand border border-brand/20 font-extrabold flex items-center gap-3 text-sm tracking-wide">
@@ -313,28 +486,21 @@
     <!-- MENU CONFIGURACION -->
     <div class="modal fixed inset-0 w-screen h-screen bg-black/80 backdrop-blur-sm hidden items-center justify-center z-[1000]" id="configModal">
         <div class="bg-card rounded-2xl w-[90%] max-w-[400px] max-h-[90vh] overflow-hidden flex flex-col border border-border shadow-2xl relative">
-            <!-- Modal Header -->
             <div class="p-4 border-b border-border flex justify-between items-center bg-bg/50 backdrop-blur-sm sticky top-0 z-10">
                 <div class="flex items-center gap-2">
                     <i class="ph-fill ph-planet text-xl text-brand"></i>
                     <span class="font-bold text-text text-sm tracking-wide">CONFIGURACIÓN</span>
                 </div>
-                <button onclick="window.app.closeModalById('configModal')" class="text-text-mute hover:text-text transition-colors">
+                <button onclick="window.app.closeModalById('configModal')" class="text-text-mute hover:text-text transition-colors cursor-pointer">
                     <i class="ph-bold ph-x text-lg"></i>
                 </button>
             </div>
-
-            <!-- Content Area -->
             <div class="p-5 overflow-y-auto flex-1">
                 <div class="flex p-1 bg-input-bg rounded-xl mb-6 border border-border/50">
                     <div class="tab active flex-1 text-center py-2 text-[0.75rem] font-bold cursor-pointer hover:text-text" onclick="window.app.switchTab('tSettings')">Ajustes</div>
                     <div class="tab flex-1 text-center py-2 text-[0.75rem] font-bold cursor-pointer hover:text-text" onclick="window.app.switchTab('tData')">Datos</div>
                 </div>
 
-                <div id="tAccount" class="tab-content hidden"></div>
-                <div id="tDesign" class="tab-content hidden"></div>
-
-                <!-- TAB AJUSTES -->
                 <div id="tSettings" class="tab-content active block animate-fade-in">
                     <div class="mb-6">
                         <p class="text-[0.65rem] font-black text-brand mb-3 uppercase tracking-wider flex items-center gap-1"><i class="ph-bold ph-clock"></i> Límites de Tiempo (Min)</p>
@@ -349,7 +515,6 @@
                             </div>
                         </div>
                     </div>
-                    
                     <div>
                         <p class="text-[0.65rem] font-black text-money mb-3 uppercase tracking-wider flex items-center gap-1"><i class="ph-bold ph-currency-dollar"></i> Configuración de Pagos</p>
                         <div class="grid grid-cols-2 gap-4">
@@ -365,50 +530,28 @@
                     </div>
                 </div>
 
-                <!-- TAB DATOS -->
                 <div id="tData" class="tab-content hidden animate-fade-in">
                     <div class="space-y-3">
-                        <!-- BOTON IMPORTAR EXCEL -->
                         <button class="w-full p-4 rounded-xl font-bold cursor-pointer border border-border bg-input-bg hover:bg-bg transition-colors flex items-center gap-3 text-left group" onclick="window.app.openImportModal()">
-                            <div class="w-10 h-10 rounded-lg bg-emerald-900/30 text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-                                <i class="ph-bold ph-file-csv text-xl"></i>
-                            </div>
-                            <div>
-                                <div class="text-sm text-text">Importar Excel</div>
-                                <div class="text-[0.65rem] text-text-mute">Cargar datos masivos</div>
-                            </div>
+                            <div class="w-10 h-10 rounded-lg bg-emerald-900/30 text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform"><i class="ph-bold ph-file-csv text-xl"></i></div>
+                            <div><div class="text-sm text-text">Importar Excel</div><div class="text-[0.65rem] text-text-mute">Cargar datos masivos</div></div>
                         </button>
-                        <!-- BOTON IMPORTAR BACKUP JSON -->
                         <button class="w-full p-4 rounded-xl font-bold cursor-pointer border border-border bg-input-bg hover:bg-bg transition-colors flex items-center gap-3 text-left group" onclick="window.app.exportBackup()">
-                             <div class="w-10 h-10 rounded-lg bg-blue-900/30 text-blue-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-                                <i class="ph-bold ph-download-simple text-xl"></i>
-                            </div>
-                            <div>
-                                <div class="text-sm text-text">Descargar Backup</div>
-                                <div class="text-[0.65rem] text-text-mute">Guardar copia de seguridad</div>
-                            </div>
+                             <div class="w-10 h-10 rounded-lg bg-blue-900/30 text-blue-400 flex items-center justify-center group-hover:scale-110 transition-transform"><i class="ph-bold ph-download-simple text-xl"></i></div>
+                            <div><div class="text-sm text-text">Descargar Backup</div><div class="text-[0.65rem] text-text-mute">Guardar copia de seguridad</div></div>
                         </button>
-                    </div>
-                        <!-- BOTON IMPORTAR BACKUP JSON -->
-                        <button class="w-full p-4 rounded-xl font-bold cursor-pointer border border-border bg-input-bg hover:bg-bg transition-colors flex items-center gap-3 text-left group" onclick="document.getElementById('importJsonInput').click()">
-                            <div class="w-10 h-10 rounded-lg bg-violet-900/30 text-violet-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-                                <i class="ph-bold ph-upload-simple text-xl"></i>
-                            </div>
-                            <div>
-                                <div class="text-sm text-text">Importar Backup (JSON)</div>
-                                <div class="text-[0.65rem] text-text-mute">Restaurar desde archivo</div>
-                            </div>
+                         <button class="w-full p-4 rounded-xl font-bold cursor-pointer border border-border bg-input-bg hover:bg-bg transition-colors flex items-center gap-3 text-left group" onclick="document.getElementById('importJsonInput').click()">
+                            <div class="w-10 h-10 rounded-lg bg-violet-900/30 text-violet-400 flex items-center justify-center group-hover:scale-110 transition-transform"><i class="ph-bold ph-upload-simple text-xl"></i></div>
+                            <div><div class="text-sm text-text">Importar Backup (JSON)</div><div class="text-[0.65rem] text-text-mute">Restaurar desde archivo</div></div>
                         </button>
                         <input type="file" id="importJsonInput" accept=".json" class="hidden" onchange="window.app.importJson(this)">
+                    </div>
                     <div class="border-t border-border my-6"></div>
-                    
                     <button class="w-full p-4 rounded-xl font-bold cursor-pointer border border-red-900 bg-red-900/10 text-red-500 hover:bg-red-900/20 transition-colors flex items-center justify-center gap-2" onclick="window.app.resetData()">
                         <i class="ph-bold ph-trash"></i> Reiniciar Aplicación
                     </button>
                 </div>
             </div>
-
-            <!-- Modal Footer -->
              <div class="p-4 border-t border-border bg-card">
                 <button class="w-full bg-brand text-white p-3.5 rounded-xl font-extrabold cursor-pointer border-none hover:bg-blue-600 transition-colors shadow-lg shadow-brand/20" onclick="window.app.saveConfig()">
                     GUARDAR CAMBIOS
@@ -421,10 +564,8 @@
     <div class="modal fixed inset-0 w-screen h-screen bg-black/80 backdrop-blur-sm hidden items-center justify-center z-[1000]" id="logModal">
         <div class="bg-card rounded-2xl w-[90%] max-w-[380px] p-5 border border-border">
             <h3 class="text-text font-bold text-lg mb-4">Registro Manual</h3>
-            
             <label class="block text-text-mute text-xs font-extrabold mb-1 uppercase">Fecha</label>
             <input type="date" id="inpDate" class="bg-input-bg border border-border w-full p-2.5 rounded-lg font-semibold text-text mb-2.5 [color-scheme:dark]">
-            
             <label class="block text-text-mute text-xs font-extrabold mb-1 uppercase">Tipo</label>
             <select id="inpType" onchange="window.app.toggleTimeInputs()" class="bg-input-bg border border-border w-full p-2.5 rounded-lg font-semibold text-text mb-2.5">
                 <option value="Laboral">Laboral</option>
@@ -432,7 +573,6 @@
                 <option value="Falta">Falta</option>
                 <option value="Vacaciones">Vacaciones</option>
             </select>
-
             <div id="timeInputs">
                 <div class="grid grid-cols-2 gap-2.5 mb-2.5">
                     <div><label class="block text-text-mute text-xs font-extrabold mb-1 uppercase">Entrada</label><input type="time" id="inpIn" onchange="window.app.calcPreview()" class="bg-input-bg border border-border w-full p-2.5 rounded-lg font-semibold text-text [color-scheme:dark]"></div>
@@ -448,13 +588,13 @@
                 </div>
                 <p class="text-right text-text-mute text-sm">Neto Calculado: <strong id="calcHoursDisplay" class="text-text">0:00</strong></p>
             </div>
-
             <button class="w-full p-3 rounded-lg font-extrabold cursor-pointer border-none mb-2.5 bg-brand text-white hover:bg-blue-600 transition-colors mt-4" onclick="window.app.saveLog()">Guardar</button>
             <button class="w-full p-3 rounded-lg font-extrabold cursor-pointer mb-2.5 text-alert border border-alert bg-transparent hidden hover:bg-alert/10" id="btnDelete" onclick="window.app.deleteLog()">Eliminar</button>
             <button class="w-full p-3 rounded-lg font-extrabold cursor-pointer border border-border bg-transparent text-text-mute hover:text-text hover:bg-white/5" onclick="window.app.closeModalById('logModal')">Cancelar</button>
         </div>
     </div>
 
+    <!-- CLOCK OUT MODAL -->
     <div class="modal fixed inset-0 w-screen h-screen bg-black/80 backdrop-blur-sm hidden items-center justify-center z-[1000]" id="clockOutModal">
         <div class="bg-card rounded-2xl w-[90%] max-w-[380px] p-5 border border-border text-center">
             <h3 class="text-text font-bold text-lg mb-4">¿Terminar Turno?</h3>
@@ -496,6 +636,7 @@
         </div>
     </div>
 
+    <!-- LOGICA UNIFICADA -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -516,7 +657,6 @@
             messagingSenderId: "660801277434",
             appId: "1:660801277434:web:3a37ece56538dc2b22a843"
         };
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
         let auth, db;
         function showGlobalError(m) { const x = document.getElementById('msgModal'); if (x) { document.getElementById('msgText').textContent = m; document.getElementById('msgIcon').className = 'ph-fill ph-warning-circle text-alert'; x.classList.remove('hidden'); x.classList.add('flex'); } else alert(m); }
@@ -531,17 +671,14 @@
 
         window.app = {
             data: { logs: [], config: { rate1: 50, rate2: 75, bathAllow: 15, foodAllow: 45 }, activeShift: null },
-            userId: null, offline: false, editingId: null, date: new Date(), timer: null, processing: false, authMode: 'login',
-            editingTimerType: null, timeOffset: 0, lastSync: 0, isSyncing: false, nextSyncAllowed: 0,
+            userId: null, offline: false, editingId: null, date: new Date(), timer: null, processing: false, 
+            editingTimerType: null, timeOffset: 0, lastSync: 0, isSyncing: false, isRegistering: false,
 
             init() {
                 this.updateRealClockUI();
                 setInterval(() => this.updateRealClockUI(), 1000);
 
-                document.getElementById('auth-status').classList.remove('hidden');
-                document.getElementById('auth-status').classList.add('flex');
-                
-                // --- AGREGADO: Lógica del Scroll ---
+                // Scroll to top button logic
                 window.addEventListener('scroll', () => {
                     const btn = document.getElementById('scrollTopBtn');
                     if (window.scrollY > 300) {
@@ -555,19 +692,119 @@
 
                 onAuthStateChanged(auth, async u => {
                     if (u) { 
+                        // USUARIO LOGUEADO -> MUESTRA APP
                         this.userId = u.uid; 
                         this.offline = false; 
-                        this.renderAuth(u); 
+                        this.renderAuth(u);
+                        
+                        document.getElementById('login-view').classList.add('hidden');
+                        const appView = document.getElementById('app-view');
+                        appView.classList.remove('hidden');
+                        setTimeout(() => appView.classList.add('animate-fade-in'), 50);
+
                         await this.load(); 
                     } else {
-                         if (!window.location.pathname.endsWith('index.html')) {
-                             // console.log("Redirigiendo...");
-                         }
-                        this.goOffline();
+                        // USUARIO NO LOGUEADO -> MUESTRA LOGIN
+                        this.userId = null;
+                        document.getElementById('app-view').classList.add('hidden');
+                        document.getElementById('app-view').classList.remove('animate-fade-in');
+                        document.getElementById('login-view').classList.remove('hidden');
+                        
+                        this.data = { logs: [], config: { rate1: 50, rate2: 75, bathAllow: 15, foodAllow: 45 }, activeShift: null };
                     }
                     this.loadLocal(); 
                 });
             },
+
+            // --- FUNCIONES DE AUTENTICACIÓN (NUEVAS) ---
+
+            toggleAuth(mode) {
+                this.isRegistering = (mode === 'register');
+                const container = document.getElementById('auth-switch-container');
+                const btnText = document.getElementById('btn-text');
+                const nameField = document.getElementById('field-name');
+                const errorMsg = document.getElementById('auth-error-msg');
+                
+                document.getElementById('tab-login').classList.toggle('active', !this.isRegistering);
+                document.getElementById('tab-register').classList.toggle('active', this.isRegistering);
+                container.classList.toggle('auth-mode-register', this.isRegistering);
+                errorMsg.classList.add('hidden');
+
+                if(this.isRegistering) {
+                    btnText.textContent = "CREAR CUENTA";
+                    nameField.classList.remove('hidden');
+                } else {
+                    btnText.textContent = "INICIAR SESIÓN";
+                    nameField.classList.add('hidden');
+                }
+            },
+
+            async handleAuthSubmit() {
+                const btn = document.getElementById('btn-submit');
+                const errMsg = document.getElementById('auth-error-msg');
+                const errTxt = document.getElementById('auth-error-txt');
+                
+                let id = document.getElementById('input-id').value.trim();
+                const pass = document.getElementById('input-pass').value;
+                const name = document.getElementById('input-name').value.trim();
+
+                if (!id || !pass) return this.showAuthError("Completa todos los campos");
+                if (this.isRegistering && !name) return this.showAuthError("El nombre es obligatorio");
+
+                if (!id.includes('@')) id = `${id}@godsplan.site`;
+
+                btn.disabled = true;
+                btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> PROCESANDO...';
+                errMsg.classList.add('hidden');
+
+                try {
+                    if (this.isRegistering) {
+                        const userCredential = await createUserWithEmailAndPassword(auth, id, pass);
+                        await updateProfile(userCredential.user, { displayName: name });
+                    } else {
+                        await signInWithEmailAndPassword(auth, id, pass);
+                    }
+                } catch (error) {
+                    console.error(error);
+                    this.showAuthError(this.mapAuthError(error.code));
+                    btn.disabled = false;
+                    btn.innerHTML = `<span>${this.isRegistering ? 'CREAR CUENTA' : 'INICIAR SESIÓN'}</span> <i class="ph-bold ph-arrow-right"></i>`;
+                }
+            },
+
+            async loginGoogle() {
+                const provider = new GoogleAuthProvider();
+                try {
+                    await signInWithPopup(auth, provider);
+                } catch (error) {
+                    console.error("Google Error:", error);
+                    this.showAuthError("Error con Google. Intenta más tarde.");
+                }
+            },
+
+            showAuthError(msg) {
+                const errMsg = document.getElementById('auth-error-msg');
+                const errTxt = document.getElementById('auth-error-txt');
+                errTxt.textContent = msg;
+                errMsg.classList.remove('hidden');
+                // Reset button state just in case
+                const btn = document.getElementById('btn-submit');
+                btn.disabled = false;
+                btn.innerHTML = `<span>${this.isRegistering ? 'CREAR CUENTA' : 'INICIAR SESIÓN'}</span> <i class="ph-bold ph-arrow-right"></i>`;
+            },
+
+            mapAuthError(code) {
+                switch(code) {
+                    case 'auth/email-already-in-use': return "Este ID/Email ya está registrado.";
+                    case 'auth/invalid-email': return "Formato de ID inválido.";
+                    case 'auth/user-not-found': return "Usuario no encontrado.";
+                    case 'auth/wrong-password': return "Contraseña incorrecta.";
+                    case 'auth/weak-password': return "La contraseña debe tener al menos 6 caracteres.";
+                    default: return "Error: " + code.split('/')[1];
+                }
+            },
+
+            // --- FUNCIONES DE APP EXISTENTE ---
 
             updateRealClockUI() {
                 const now = new Date();
@@ -587,9 +824,7 @@
 
             getNow() { return Date.now() + this.timeOffset; },
 
-            getCDMXDate(ms) {
-                 return new Date(ms).toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
-            },
+            getCDMXDate(ms) { return new Date(ms).toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' }); },
 
             getCDMXTime(ms) {
                 return new Date(ms).toLocaleTimeString('es-MX', { 
@@ -597,22 +832,18 @@
                 }).slice(0, 5);
             },
 
-            goOffline() { this.offline = true; document.getElementById('auth-status').innerHTML = `<i class="ph-bold ph-wifi-slash"></i> Offline`; this.loadLocal(); },
+            goOffline() { 
+                this.offline = true; 
+                this.loadLocal(); 
+            },
             
             renderAuth(u) {
                 const isRealUser = u && !u.isAnonymous;
                 let t = u ? (u.isAnonymous ? "ANÓNIMO" : (u.displayName || "Usuario")) : "DESCONECTADO";
                 if (isRealUser && u.email && u.email.includes('@godsplan.site')) t = u.email.split('@')[0];
-                document.getElementById('auth-status').innerHTML = `<i class="ph-fill ph-user-circle"></i> ${t}`;
                 
-                const badge = document.getElementById('user-badge');
                 const nameLabel = document.getElementById('user-name');
-                if (isRealUser) {
-                    badge.classList.remove('hidden'); badge.classList.add('flex');
-                    if (nameLabel) nameLabel.textContent = t;
-                } else {
-                    badge.classList.add('hidden'); badge.classList.remove('flex');
-                }
+                if (nameLabel) nameLabel.textContent = t;
             },
 
             loadLocal() { const d = localStorage.getItem('godsPlanData'); if (d) { try { this.data = JSON.parse(d); this.render(); this.uiClock(); } catch (e) { } } },
@@ -642,8 +873,7 @@
                 }
             },
             
-            syncData() { this.load(); this.showSuccess("Sincronizado"); this.syncNetworkTime(true); },
-            async syncNetworkTime(force = false) { this.isSyncing = false; },
+            syncData() { this.load(); this.showSuccess("Sincronizado"); },
             
             uiClock() {
                 const s = this.data.activeShift;
@@ -658,7 +888,6 @@
                 const btnStart = `${btnBase} col-span-2 text-lg h-[70px] text-white bg-gradient-to-br from-blue-600 to-blue-800 hover:from-blue-500 hover:to-blue-700 border-none`;
                 const btnStop = `${btnBase} col-span-2 text-white bg-gradient-to-br from-red-600 to-red-800 hover:from-red-500 hover:to-red-700 border-none`;
                 
-                // ACTUALIZACIÓN DE BORDES SOLICITADA
                 const btnBath = `${btnBase} bg-card text-text-mute border-2 border-blue-500/40 hover:border-blue-500 hover:text-blue-500 hover:bg-blue-500/10`;
                 const btnFood = `${btnBase} bg-card text-text-mute border-2 border-amber-500/40 hover:border-amber-500 hover:text-amber-500 hover:bg-amber-500/10`;
                 const btnPause = `${btnBase} col-span-2 bg-card text-text-mute border-2 border-orange-600/40 hover:border-orange-500 hover:text-orange-500 hover:bg-orange-500/10`;
@@ -790,11 +1019,6 @@
             },
 
             clockIn() {
-                if (auth.currentUser?.isAnonymous) {
-                    this.showMessage("Inicia sesión primero.");
-                    this.redirectToAuth();
-                    return;
-                }
                 if (this.processing) return; this.processing = true;
                 this.stopBreak();
                 this.data.activeShift = { start: this.getNow(), breaks: { bathroom: 0, food: 0, pause: 0 }, breakStart: null, breakType: null };
@@ -960,7 +1184,6 @@
                 document.getElementById('cfgBath').value = this.data.config.bathAllow || 15; document.getElementById('cfgFood').value = this.data.config.foodAllow || 45; document.getElementById('cfgRate1').value = this.data.config.rate1; document.getElementById('cfgRate2').value = this.data.config.rate2; 
                 this.switchTab('tSettings'); 
             },
-            // --- NUEVO: Función para abrir modal de navegación ---
             openNavModal() {
                  const m = document.getElementById('navModal');
                  m.classList.remove('hidden');
@@ -969,12 +1192,7 @@
             saveConfig() { this.data.config.bathAllow = parseFloat(document.getElementById('cfgBath').value) || 15; this.data.config.foodAllow = parseFloat(document.getElementById('cfgFood').value) || 45; this.data.config.rate1 = parseFloat(document.getElementById('cfgRate1').value) || 50; this.data.config.rate2 = parseFloat(document.getElementById('cfgRate2').value) || 75; this.save(); this.closeModalById('configModal'); },
             switchTab(id) { document.querySelectorAll('.tab').forEach(t => t.classList.remove('active')); document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active', 'block')); document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden')); event.target.classList.add('active'); document.getElementById(id).classList.add('active', 'block'); document.getElementById(id).classList.remove('hidden'); },
             
-            redirectToAuth() { window.location.href = "index.html"; },
-            openAuthModal(m) { this.redirectToAuth(); },
-            processAuth() { this.redirectToAuth(); },
-            loginWithGoogle() { this.redirectToAuth(); },
-            
-            logout() { signOut(auth).then(() => window.location.href = "index.html"); }, 
+            logout() { signOut(auth).then(() => window.location.reload()); }, 
             
             resetData() { if (confirm("¿Borrar todo?")) { this.data = { logs: [], config: this.data.config, activeShift: null }; this.save(); location.reload(); } },
 
@@ -1088,7 +1306,6 @@
             },
             processImport() { const t = document.getElementById('importTextArea').value; if (!t) return; const l = t.split('\n'); let c = 0; l.forEach(x => { const p = x.split(/[\t,]+/); if (p.length >= 4) { this.data.logs.push({ id: Date.now() + c, date: p[0], type: p[1], in: p[2], out: p[3], hours: this.calcHours(p[2], p[3]), disconnection: 0 }); c++; } }); this.save(); this.closeModalById('importModal'); this.showSuccess(c + " importados"); },
             
-            // NUEVA FUNCIÓN DE IMPORTAR JSON
             importJson(input) {
                 const file = input.files[0];
                 if(!file) return;
@@ -1097,7 +1314,6 @@
                     try {
                         const json = JSON.parse(e.target.result);
                         if (Array.isArray(json.logs)) {
-                            // Merge logs based on ID to avoid duplicates
                             let count = 0;
                             json.logs.forEach(l => {
                                 if (!this.data.logs.find(x => x.id === l.id)) {
@@ -1105,19 +1321,18 @@
                                     count++;
                                 }
                             });
-                            // Update config if exists
                             if(json.config) this.data.config = { ...this.data.config, ...json.config };
                             
                             this.save();
                             this.render();
-                            this.showSuccess(count > 0 ? `${count} registros recuperados` : "Datos actualizados (Sin nuevos registros)");
+                            this.showSuccess(count > 0 ? `${count} registros recuperados` : "Datos actualizados");
                         } else {
                             this.showMessage("Archivo inválido");
                         }
                     } catch (err) {
                         this.showMessage("Error al leer JSON");
                     }
-                    input.value = ''; // Reset
+                    input.value = ''; 
                 };
                 reader.readAsText(file);
             },
@@ -1132,43 +1347,29 @@
         };
         
         // --- EVENT LISTENER PARA LA EXTENSIÓN (GOD'S PLAN CONNECTOR) ---
-        // Este bloque escucha los mensajes de la extensión y ejecuta las acciones en la app
         window.addEventListener("message", (event) => {
-            // 1. Filtro de seguridad: Solo aceptar mensajes de la extensión
             if (event.data.type !== "GODSPLAN_COMMAND") return;
-        
             console.log("Web God's Plan: Comando recibido del Content Script:", event.data.action);
-        
             const action = event.data.action;
-        
-            // 2. Ejecutar la lógica de tu web según la acción
             switch(action) {
                 case 'RESUME_WORK':
-                    // Lógica inteligente: Si ya hay turno activo, solo paramos el break.
-                    // Si NO hay turno, iniciamos uno nuevo (Clock In).
                     if (window.app.data.activeShift) {
                         window.app.stopBreak();
                     } else {
                         window.app.clockIn();
                     }
                     break;
-                    
                 case 'START_BREAK_FOOD':
-                    // Si intentan ir a comer sin haber iniciado turno, iniciamos turno primero
                     if (!window.app.data.activeShift) window.app.clockIn();
                     window.app.startBreak('food');
                     break;
-                    
                 case 'START_BREAK_BATH':
                     if (!window.app.data.activeShift) window.app.clockIn();
                     window.app.startBreak('bathroom');
                     break;
-                    
                 case 'END_SHIFT':
-                    // Finalizar turno real (guardar log y detener contador)
                     if (window.app.data.activeShift) window.app.finishShiftReal();
                     break;
-                    
                 default:
                     console.log("Acción desconocida:", action);
             }
@@ -1177,5 +1378,4 @@
         document.addEventListener('DOMContentLoaded', () => window.app.init());
     </script>
 </body>
-
 </html>
