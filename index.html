@@ -1117,7 +1117,14 @@
                             let count = 0;
                             json.logs.forEach(l => { if (!this.data.logs.find(x => x.id === l.id)) { this.data.logs.push(l); count++; } });
                             if(json.config) this.data.config = { ...this.data.config, ...json.config };
-                            this.save(); this.render(); this.showSuccess(count > 0 ? `${count} recuperados` : "Actualizado");
+                            
+                            // NUEVO: Restaurar turno activo si existe en el backup y no hay uno actual
+                            if (json.activeShift && !this.data.activeShift) {
+                                this.data.activeShift = json.activeShift;
+                            }
+
+                            this.save(); this.render(); this.uiClock(); // Se agrega this.uiClock() para refrescar el reloj
+                            this.showSuccess(count > 0 ? `${count} recuperados` : "Actualizado");
                         } else this.showMessage("Archivo inválido");
                     } catch (err) { this.showMessage("Error JSON"); }
                     input.value = ''; 
