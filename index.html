@@ -206,7 +206,7 @@
             <div class="flex items-center gap-2 flex-wrap justify-end flex-1 md:flex-none">
                 <div id="realWorldClock" class="flex flex-col items-end mr-1 px-2 py-0.5 border-r border-border/50 min-w-[70px]">
                     <div class="text-[0.6rem] text-text-mute font-black tracking-wider leading-none mb-0.5 flex items-center gap-1 justify-end">
-                          <span id="syncDot" class="w-1.5 h-1.5 rounded-full bg-red-500 inline-block"></span> CDMX
+                          <span id="syncDot" class="w-1.5 h-1.5 rounded-full bg-red-500 inline-block transition-colors duration-300"></span> CDMX
                     </div>
                     <div class="text-[0.9rem] font-mono font-bold text-text leading-none tabular-nums text-right" id="realClockTime">--:--:--</div>
                 </div>
@@ -445,7 +445,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc, collection, getDocs, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
         // 1. Configuración Firebase
         const firebaseConfig = {
@@ -466,6 +466,9 @@
         } catch (e) {
             console.error("Firebase Init Error:", e);
         }
+
+        // Variable global para almacenar el 'unsubscribe' del listener
+        let unsubscribeListener = null;
 
         // 3. Sistema de Caché del DOM (OPTIMIZACIÓN CRÍTICA)
         const elmCache = new Map();
@@ -518,9 +521,17 @@
                             appView.classList.remove('hidden');
                             setTimeout(() => appView.classList.add('animate-fade-in'), 50);
                         }
-                        // 1. Si hay usuario, cargamos de la nube
-                        await this.load(); 
+                        
+                        // 1. Iniciar listener en tiempo real (Reemplazo de load())
+                        this.listenToChanges(); 
+
                     } else {
+                        // Limpiar listener al salir
+                        if (unsubscribeListener) {
+                            unsubscribeListener();
+                            unsubscribeListener = null;
+                        }
+
                         this.userId = null;
                         const appView = getElement('app-view');
                         if(appView) {
@@ -534,6 +545,47 @@
                         this.loadLocal(); 
                     }
                 });
+            },
+
+            // --- REAL TIME LISTENER (NUEVO) ---
+            listenToChanges() {
+                if (this.offline || !this.userId) return;
+                
+                // Si ya hay un listener, lo detenemos para no duplicar
+                if (unsubscribeListener) unsubscribeListener();
+
+                // ESCUCHA EN TIEMPO REAL (PUSH)
+                try {
+                    unsubscribeListener = onSnapshot(doc(db, "users", this.userId, "attendance", "sync_state"), (docSnap) => {
+                        if (docSnap.exists()) {
+                            const remoteData = docSnap.data();
+                            
+                            // Actualizamos datos locales con la verdad de la nube
+                            this.data = remoteData;
+                            this.data.logs = this.data.logs || [];
+                            this.data.config = this.data.config || { rate1: 50, rate2: 75, bathAllow: 15, foodAllow: 45 };
+                            
+                            this.render();
+                            this.uiClock();
+
+                            // Efecto visual en el punto de sincronización
+                            const dot = getElement('syncDot');
+                            if(dot) {
+                                dot.classList.remove('bg-red-500');
+                                dot.classList.add('bg-green-500', 'shadow-[0_0_10px_rgba(34,197,94,0.5)]');
+                                setTimeout(() => {
+                                    dot.classList.remove('bg-green-500', 'shadow-[0_0_10px_rgba(34,197,94,0.5)]');
+                                    dot.classList.add('bg-red-500');
+                                }, 800);
+                            }
+                        }
+                    }, (error) => {
+                        console.error("Error en listener:", error);
+                        // Opcional: Manejar desconexión visual
+                    });
+                } catch (e) {
+                    console.error("Error iniciando snapshot:", e);
+                }
             },
 
             // --- AUTH ---
@@ -614,30 +666,19 @@
 
             loadLocal() { const d = localStorage.getItem('godsPlanData'); if (d) { try { this.data = JSON.parse(d); this.render(); this.uiClock(); } catch (e) { } } },
             
-            async load() {
-                if (this.offline || !this.userId) return;
-                try {
-                    const snap = await getDoc(doc(db, "users", this.userId, "attendance", "sync_state"));
-                    if (snap.exists()) { 
-                        this.data = snap.data(); 
-                        this.data.logs = this.data.logs || []; 
-                        this.data.config = this.data.config || { rate1: 50, rate2: 75, bathAllow: 15, foodAllow: 45 };
-                    } else if (auth.currentUser.isAnonymous) { 
-                        const l = localStorage.getItem('godsPlanData'); 
-                        if (l) { this.data = JSON.parse(l); this.save(); } 
-                    }
-                    this.render(); this.uiClock();
-                } catch (e) { console.error(e); }
-            },
-            
             async save() {
                 localStorage.setItem('godsPlanData', JSON.stringify(this.data));
                 if (!this.offline && this.userId) {
+                    // Al guardar, onSnapshot se disparará, pero eso está bien, asegura consistencia
                     await setDoc(doc(db, "users", this.userId, "attendance", "sync_state"), this.data, { merge: true });
                 }
             },
             
-            syncData() { this.load(); this.showSuccess("Sincronizado"); },
+            syncData() { 
+                // Reiniciar el listener fuerza una actualización fresca
+                this.listenToChanges(); 
+                this.showSuccess("Sincronizando..."); 
+            },
             
             uiClock() {
                 const s = this.data.activeShift;
