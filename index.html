@@ -199,24 +199,38 @@
 
     <!-- APP PRINCIPAL -->
     <div id="app-view" class="hidden min-h-screen pb-24 pt-20">
-        <header class="bg-card border-b border-border py-2.5 px-4 fixed top-0 left-0 w-full z-50 flex justify-between items-center shadow-sm flex-wrap gap-2.5 transition-all">
-            <div class="text-[1.1rem] font-extrabold flex items-center gap-2 text-text uppercase">
-                <i class="ph-fill ph-check-circle text-brand"></i> <span>Panel de Control</span>
+        <!-- HEADER OPTIMIZADO PARA MÓVIL Y DESKTOP -->
+        <header class="bg-card border-b border-border fixed top-0 left-0 w-full z-50 flex items-center justify-between px-3 py-2 shadow-sm transition-all h-[60px] md:h-auto">
+            <!-- TITULO / LOGO -->
+            <div class="text-lg md:text-[1.1rem] font-extrabold flex items-center gap-2 text-text uppercase shrink-0">
+                <i class="ph-fill ph-check-circle text-brand text-2xl md:text-xl"></i> 
+                <!-- El texto se oculta en móvil para ahorrar espacio -->
+                <span class="hidden md:inline">Panel de Control</span>
             </div>
-            <div class="flex items-center gap-2 flex-wrap justify-end flex-1 md:flex-none">
-                <div id="realWorldClock" class="flex flex-col items-end mr-1 px-2 py-0.5 border-r border-border/50 min-w-[70px]">
-                    <div class="text-[0.6rem] text-text-mute font-black tracking-wider leading-none mb-0.5 flex items-center gap-1 justify-end">
+
+            <!-- CONTROLES DERECHA -->
+            <div class="flex items-center gap-1.5 md:gap-2 justify-end flex-1 min-w-0">
+                
+                <!-- RELOJ -->
+                <div id="realWorldClock" class="flex flex-col items-end px-1.5 md:px-2 py-0.5 border-r border-border/50 shrink-0">
+                    <div class="hidden md:flex text-[0.6rem] text-text-mute font-black tracking-wider leading-none mb-0.5 items-center gap-1 justify-end">
                           <span id="syncDot" class="w-1.5 h-1.5 rounded-full bg-red-500 inline-block transition-colors duration-300"></span> CDMX
                     </div>
-                    <div class="text-[0.9rem] font-mono font-bold text-text leading-none tabular-nums text-right" id="realClockTime">--:--:--</div>
+                    <!-- En móvil solo mostramos la hora, un poco más pequeña -->
+                    <div class="text-xs md:text-[0.9rem] font-mono font-bold text-text leading-none tabular-nums text-right" id="realClockTime">--:--:--</div>
                 </div>
-                <button class="bg-transparent border border-border text-text-mute text-base p-1.5 rounded-lg flex items-center justify-center hover:bg-bg hover:text-text cursor-pointer" onclick="window.app.syncData()" title="Sincronizar"><i class="ph-bold ph-arrows-clockwise"></i></button>
-                <button class="bg-transparent border border-border text-text-mute text-base p-1.5 rounded-lg flex items-center justify-center hover:bg-bg hover:text-text cursor-pointer" onclick="window.app.openConfigModal()" title="Menú"><i class="ph-bold ph-gear"></i></button>
-                <div class="flex items-center gap-1 bg-bg px-2 py-1 rounded-full border border-border">
-                    <button class="bg-transparent border-none text-text-mute cursor-pointer text-[1.1rem] p-1 rounded-full flex items-center justify-center hover:text-text" onclick="window.app.changeMonth(-1)"><i class="ph-bold ph-caret-left"></i></button>
-                    <span class="text-[0.85rem] font-extrabold uppercase text-text min-w-[75px] text-center" id="monthLabel">--</span>
-                    <button class="bg-transparent border-none text-text-mute cursor-pointer text-[1.1rem] p-1 rounded-full flex items-center justify-center hover:text-text" onclick="window.app.changeMonth(1)"><i class="ph-bold ph-caret-right"></i></button>
-                    <button class="bg-transparent border-none text-brand cursor-pointer text-[1.1rem] p-1 rounded-full flex items-center justify-center hover:scale-110 transition-transform" onclick="window.app.goToday()"><i class="ph-bold ph-calendar-check"></i></button>
+
+                <!-- BOTONES DE ACCIÓN -->
+                <button class="bg-transparent border border-border text-text-mute text-lg md:text-base p-1.5 rounded-lg flex items-center justify-center hover:bg-bg hover:text-text cursor-pointer shrink-0" onclick="window.app.syncData()" title="Sincronizar"><i class="ph-bold ph-arrows-clockwise"></i></button>
+                <button class="bg-transparent border border-border text-text-mute text-lg md:text-base p-1.5 rounded-lg flex items-center justify-center hover:bg-bg hover:text-text cursor-pointer shrink-0" onclick="window.app.openConfigModal()" title="Menú"><i class="ph-bold ph-gear"></i></button>
+
+                <!-- NAVEGACIÓN FECHAS -->
+                <div class="flex items-center gap-0.5 md:gap-1 bg-bg px-1.5 py-1 rounded-full border border-border ml-1 shrink-0">
+                    <button class="bg-transparent border-none text-text-mute cursor-pointer text-lg md:text-[1.1rem] p-1 rounded-full flex items-center justify-center hover:text-text" onclick="window.app.changeMonth(-1)"><i class="ph-bold ph-caret-left"></i></button>
+                    <!-- Mes más pequeño en móvil -->
+                    <span class="text-[0.7rem] md:text-[0.85rem] font-extrabold uppercase text-text min-w-[55px] md:min-w-[75px] text-center whitespace-nowrap" id="monthLabel">--</span>
+                    <button class="bg-transparent border-none text-text-mute cursor-pointer text-lg md:text-[1.1rem] p-1 rounded-full flex items-center justify-center hover:text-text" onclick="window.app.changeMonth(1)"><i class="ph-bold ph-caret-right"></i></button>
+                    <button class="bg-transparent border-none text-brand cursor-pointer text-lg md:text-[1.1rem] p-1 rounded-full flex items-center justify-center hover:scale-110 transition-transform" onclick="window.app.goToday()"><i class="ph-bold ph-calendar-check"></i></button>
                 </div>
             </div>
         </header>
