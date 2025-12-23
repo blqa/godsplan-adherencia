@@ -592,6 +592,12 @@
                             this.data.logs = this.data.logs || [];
                             this.data.config = this.data.config || { rate1: 50, rate2: 75, bathAllow: 15, foodAllow: 45 };
                             
+                            // SANITIZACIÓN: Si activeShift existe pero tiene start corrupto, lo corregimos
+                            if (this.data.activeShift && !Number.isFinite(this.data.activeShift.start)) {
+                                console.warn("Detectado turno corrupto, reparando...");
+                                this.data.activeShift.start = Date.now();
+                            }
+
                             this.render();
                             this.uiClock();
 
@@ -746,7 +752,9 @@
                     setText('limFood', fl);
                     
                     if(startEl && s.start) {
-                        startEl.textContent = `ENTRADA: ${formatters.shortTime.format(new Date(s.start))}`;
+                        // FIX: Validar s.start
+                        const safeStart = Number(s.start) ? new Date(s.start) : new Date();
+                        startEl.textContent = `ENTRADA: ${formatters.shortTime.format(safeStart)}`;
                         startEl.style.display = 'block';
                     }
 
@@ -764,24 +772,31 @@
                     // Función optimizada de intervalo (usa caché de elementos)
                     this.timer = setInterval(() => {
                         const now = this.getNow();
-                        let totalPauseAccumulated = (s.breaks.pause || 0) * 60000;
+                        // SAFEGUARDS: Forzar conversión a número para evitar NaN
+                        const safeStart = Number(s.start) || now; 
+                        let totalPauseAccumulated = (Number(s.breaks?.pause) || 0) * 60000;
                         let currentPauseDuration = 0;
                         
                         if (s.breakType === 'pause') {
                             setText('clockStatus', "PAUSADO");
                             if(cs) cs.classList.add('animate-pulse-custom', 'text-warn');
-                            currentPauseDuration = now - s.breakStart;
+                            currentPauseDuration = now - (Number(s.breakStart) || now);
                         } else {
                             setText('clockStatus', "TURNO ACTIVO");
                             if(cs) cs.classList.remove('animate-pulse-custom', 'text-warn');
                         }
 
-                        let displayTime = (now - s.start) - totalPauseAccumulated - currentPauseDuration;
+                        let displayTime = (now - safeStart) - totalPauseAccumulated - currentPauseDuration;
+                        // ULTIMATE SAFETY: Si da NaN o negativo por error de reloj, forzar 0
+                        if (isNaN(displayTime) || displayTime < 0) displayTime = 0;
+                        
                         setText('clockDisplay', this.msToTime(displayTime));
 
-                        let b = s.breaks.bathroom || 0, f = s.breaks.food || 0;
+                        let b = Number(s.breaks?.bathroom) || 0;
+                        let f = Number(s.breaks?.food) || 0;
+
                         if (s.breakStart) {
-                            const d = (now - s.breakStart) / 60000;
+                            const d = (now - (Number(s.breakStart) || now)) / 60000;
                             if (s.breakType === 'bathroom') b += d; else if (s.breakType === 'food') f += d;
                         }
                         
@@ -814,8 +829,16 @@
             
             // --- TIME & CALCULATIONS ---
             fmt(m) { const r = Math.round(m); const a = Math.abs(r); return `${r < 0 ? '-' : ''}${Math.floor(a / 60)}:${(a % 60).toString().padStart(2, '0')}`; },
-            fmtBreak(m) { return `${Math.floor(m).toString().padStart(2, '0')}:${Math.floor((m % 1) * 60).toString().padStart(2, '0')}`; },
-            msToTime(ms) { const s = Math.floor(ms / 1000), m = Math.floor(s / 60), h = Math.floor(m / 60); return `${h}:${(m % 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`; },
+            fmtBreak(m) { 
+                if(!Number.isFinite(m)) return "00:00";
+                return `${Math.floor(m).toString().padStart(2, '0')}:${Math.floor((m % 1) * 60).toString().padStart(2, '0')}`; 
+            },
+            msToTime(ms) { 
+                // CRITICAL FIX: Retornar 0 si es NaN para evitar NaN:NaN:NaN
+                if (!Number.isFinite(ms)) return "0:00:00";
+                const s = Math.floor(ms / 1000), m = Math.floor(s / 60), h = Math.floor(m / 60); 
+                return `${h}:${(m % 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`; 
+            },
             getWeek(d) { d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7)); var y = new Date(Date.UTC(d.getUTCFullYear(), 0, 1)); return Math.ceil((((d - y) / 86400000) + 1) / 7); },
             calcHours(i, o) { if (!i || !o) return 0; const [h1, m1] = i.split(':'), [h2, m2] = o.split(':'); const d = ((h2 * 60 + +m2) - (h1 * 60 + +m1)); return d < 0 ? -1 : d; },
             calcStats(logs) { let t = 0, w = 0, f = 0; logs.forEach(l => { t += (l.type === 'Laboral' || l.type === 'Falta') ? 480 : 0; w += (l.type === 'Laboral' || l.type === 'Descanso') ? (l.hours - (l.disconnection || 0)) : 0; if (l.type === 'Falta') f++; }); return { target: t, worked: w, bal: w - t, fails: f }; },
@@ -824,9 +847,11 @@
             openTimerEdit(type) {
                 if (!this.data.activeShift) return;
                 this.editingTimerType = type;
-                let currentTotal = this.data.activeShift.breaks[type] || 0;
+                // Safe access
+                let currentTotal = Number(this.data.activeShift.breaks?.[type]) || 0;
+                
                 if (this.data.activeShift.breakStart && this.data.activeShift.breakType === type) {
-                    currentTotal += (this.getNow() - this.data.activeShift.breakStart) / 60000;
+                    currentTotal += (this.getNow() - (Number(this.data.activeShift.breakStart) || this.getNow())) / 60000;
                 }
                 setText('timerEditTitle', type === 'bathroom' ? 'Baño' : 'Comida');
                 const m = Math.floor(currentTotal);
@@ -850,7 +875,9 @@
                 if (isNaN(newVal) || newVal < 0) return this.showMessage("Tiempo inválido");
                 
                 // Actualizar shift
+                if (!this.data.activeShift.breaks) this.data.activeShift.breaks = {};
                 this.data.activeShift.breaks[this.editingTimerType] = newVal;
+                
                 if (this.data.activeShift.breakStart && this.data.activeShift.breakType === this.editingTimerType) {
                     this.data.activeShift.breakStart = this.getNow();
                 }
@@ -877,7 +904,7 @@
                 if (s && s.breakStart) {
                     if (s.breakType) {
                         if (s.breaks[s.breakType] === undefined) s.breaks[s.breakType] = 0;
-                        s.breaks[s.breakType] += (this.getNow() - s.breakStart) / 60000;
+                        s.breaks[s.breakType] += (this.getNow() - (Number(s.breakStart) || this.getNow())) / 60000;
                     }
                     s.breakStart = null; s.breakType = null;
                     this.save(); this.uiClock();
@@ -890,17 +917,18 @@
                 if (!s.breaks) s.breaks = { bathroom: 0, food: 0, pause: 0 };
                 
                 const end = this.getNow();
-                const totalWallTime = (end - s.start) / 60000;
-                const pauseTime = s.breaks.pause || 0;
+                const totalWallTime = (end - (Number(s.start) || end)) / 60000;
+                const pauseTime = Number(s.breaks.pause) || 0;
                 const gross = totalWallTime - pauseTime;
                 
-                const b = s.breaks.bathroom || 0, f = s.breaks.food || 0;
+                const b = Number(s.breaks.bathroom) || 0, f = Number(s.breaks.food) || 0;
                 const config = this.data.config || {}; 
                 const disc = Math.max(0, b - (config.bathAllow || 15)) + Math.max(0, f - (config.foodAllow || 45));
                 
                 // Usar formateadores cacheados
-                const logDate = formatters.dateISO.format(new Date(s.start));
-                const logIn = formatters.shortTime.format(new Date(s.start));
+                const safeStart = Number(s.start) ? new Date(s.start) : new Date();
+                const logDate = formatters.dateISO.format(safeStart);
+                const logIn = formatters.shortTime.format(safeStart);
                 const logOut = formatters.shortTime.format(new Date(end));
 
                 this.data.logs.push({
@@ -1168,4 +1196,3 @@
     </script>
 </body>
 </html>
-
