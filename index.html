@@ -254,7 +254,7 @@
                     <div class="flex flex-col items-center">
                         <div class="text-[0.7rem] uppercase tracking-widest text-text-mute font-extrabold mb-1.5" id="clockStatus">TURNO ACTIVO</div>
                         <div class="text-[clamp(2.5rem,12vw,4rem)] font-extrabold text-text tabular-nums leading-none" id="clockDisplay">00:00</div>
-                        <div id="shiftStartTime" class="text-[0.7rem] text-text-mute font-bold mt-1.5 uppercase tracking-wide opacity-80" style="display:none;">ENTRADA: --:--</div>
+                        <button id="shiftStartTime" onclick="window.app.openStartTimeEdit()" class="text-[0.7rem] text-text-mute font-bold mt-1.5 uppercase tracking-wide opacity-80 hover:text-text hover:opacity-100 transition-all cursor-pointer bg-transparent border-none flex items-center justify-center gap-1 mx-auto" style="display:none;"></button>
                         <div id="networkTimeBadge" class="text-[0.65rem] text-money font-bold mt-1.5 opacity-0 transition-opacity duration-500"><i class="ph-bold ph-globe"></i> Local</div>
                     </div>
 
@@ -429,8 +429,8 @@
     <div class="modal fixed inset-0 w-screen h-screen bg-black/80 backdrop-blur-sm hidden items-center justify-center z-[1000]" id="timerEditModal">
         <div class="bg-card rounded-2xl w-[90%] max-w-[380px] p-5 border border-border">
             <h3 class="text-text font-bold text-lg mb-4">Ajustar Tiempo</h3>
-            <p class="text-sm mb-2.5 text-text-mute">Ingresa el tiempo acumulado para <strong id="timerEditTitle" class="text-text">--</strong>.</p>
-            <input type="text" id="inpTimerEdit" placeholder="Ej. 3:14" class="text-lg text-center bg-input-bg border border-border w-full p-2.5 rounded-lg font-semibold text-text">
+            <p class="text-sm mb-2.5 text-text-mute" id="timerEditDesc">Ingresa el tiempo acumulado para <strong id="timerEditTitle" class="text-text">--</strong>.</p>
+            <input type="text" id="inpTimerEdit" placeholder="Ej. 3:14" class="text-lg text-center bg-input-bg border border-border w-full p-2.5 rounded-lg font-semibold text-text [color-scheme:dark]">
             <div class="flex gap-2.5 mt-4">
                 <button class="flex-1 bg-brand text-white p-3 rounded-lg font-extrabold cursor-pointer border-none hover:bg-blue-600 transition-colors" onclick="window.app.saveTimerEdit()">Actualizar</button>
                 <button class="flex-1 bg-transparent border border-border text-text-mute p-3 rounded-lg font-extrabold cursor-pointer hover:text-text hover:bg-white/5" onclick="window.app.toggleModal('timerEditModal', false)">Cancelar</button>
@@ -754,8 +754,9 @@
                     if(startEl && s.start) {
                         // FIX: Validar s.start
                         const safeStart = Number(s.start) ? new Date(s.start) : new Date();
-                        startEl.textContent = `ENTRADA: ${formatters.shortTime.format(safeStart)}`;
-                        startEl.style.display = 'block';
+                        // MODIFICADO: Ahora muestra el icono y usa innerHTML para permitir edición
+                        startEl.innerHTML = `ENTRADA: ${formatters.shortTime.format(safeStart)} <i class="ph-bold ph-pencil-simple text-brand text-[1.1em] ml-1"></i>`;
+                        startEl.style.display = 'flex';
                     }
 
                     if(area) {
@@ -854,16 +855,62 @@
                     currentTotal += (this.getNow() - (Number(this.data.activeShift.breakStart) || this.getNow())) / 60000;
                 }
                 setText('timerEditTitle', type === 'bathroom' ? 'Baño' : 'Comida');
-                const m = Math.floor(currentTotal);
-                const s = Math.floor((currentTotal % 1) * 60);
+                
+                // Reset to duration mode
+                setText('timerEditDesc', `Ingresa el tiempo acumulado para ${type === 'bathroom' ? 'Baño' : 'Comida'}.`);
                 const inp = getElement('inpTimerEdit');
-                if(inp) inp.value = `${m}:${s.toString().padStart(2, '0')}`; 
+                if(inp) {
+                    inp.type = 'text'; // Mode Duration
+                    const m = Math.floor(currentTotal);
+                    const s = Math.floor((currentTotal % 1) * 60);
+                    inp.value = `${m}:${s.toString().padStart(2, '0')}`;
+                }
+                 
                 this.toggleModal('timerEditModal', true);
                 if(inp) setTimeout(() => inp.focus(), 100);
+            },
+            
+            // NUEVO: Función para abrir modal de hora de entrada
+            openStartTimeEdit() {
+                if (!this.data.activeShift) return;
+                this.editingTimerType = 'start';
+                
+                const start = new Date(this.data.activeShift.start);
+                const h = start.getHours().toString().padStart(2, '0');
+                const m = start.getMinutes().toString().padStart(2, '0');
+                
+                setText('timerEditTitle', 'Hora de Entrada');
+                setText('timerEditDesc', 'Ajusta la hora de inicio de jornada.');
+
+                const inp = getElement('inpTimerEdit');
+                if(inp) {
+                    inp.type = 'time'; // Change to time picker
+                    inp.value = `${h}:${m}`;
+                }
+                this.toggleModal('timerEditModal', true);
             },
 
             saveTimerEdit() {
                 if (!this.editingTimerType || !this.data.activeShift) return;
+                
+                // NUEVO: Lógica específica para editar hora de inicio
+                if (this.editingTimerType === 'start') {
+                    const inp = getElement('inpTimerEdit');
+                    if (!inp || !inp.value) return;
+                    const [h, m] = inp.value.split(':').map(Number);
+                    
+                    // Modificamos solo la hora del inicio actual, mantenemos la fecha
+                    const newStart = new Date(this.data.activeShift.start);
+                    newStart.setHours(h, m, 0, 0);
+                    
+                    this.data.activeShift.start = newStart.getTime();
+                    this.save();
+                    this.uiClock();
+                    this.toggleModal('timerEditModal', false);
+                    return;
+                }
+                
+                // Lógica existente para descansos
                 const inp = getElement('inpTimerEdit');
                 const valStr = inp ? inp.value.trim() : '0';
                 let newVal = 0;
@@ -874,7 +921,6 @@
                 
                 if (isNaN(newVal) || newVal < 0) return this.showMessage("Tiempo inválido");
                 
-                // Actualizar shift
                 if (!this.data.activeShift.breaks) this.data.activeShift.breaks = {};
                 this.data.activeShift.breaks[this.editingTimerType] = newVal;
                 
