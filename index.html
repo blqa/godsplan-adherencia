@@ -1,612 +1,467 @@
 <!DOCTYPE html>
-<html lang="es" class="dark">
+<html lang="es">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>God's Plan | Finanzas</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gods Plan | Adherencia</title>
     
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-    
-    <!-- Icons -->
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- FAVICON -->
+    <link rel="shortcut icon" href="./favicon.ico?v=2" type="image/x-icon">
+    <link rel="icon" href="./favicon.ico?v=2" type="image/x-icon">
 
-    <!-- Tailwind Config -->
+    <!-- FUENTE UNIFICADA: PLUS JAKARTA SANS -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- SCRIPT DE ICONOS -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <!-- TAILWIND CSS & CONFIGURACIÓN DE TEMA -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
-            darkMode: 'class',
+            darkMode: 'class', 
             theme: {
                 extend: {
-                    fontFamily: { 
-                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-                        mono: ['"JetBrains Mono"', 'monospace']
+                    colors: {
+                        bg: 'var(--bg)',
+                        card: 'var(--card)',
+                        text: 'var(--text)',
+                        'text-mute': 'var(--text-mute)',
+                        brand: 'var(--brand)',
+                        'login-brand': 'var(--login-brand)',
+                        money: 'var(--money)',
+                        alert: 'var(--alert)',
+                        warn: 'var(--warn)',
+                        border: 'var(--border)',
+                        'input-bg': 'var(--input-bg)',
                     },
-                    colors: { 
-                        dark: { 900: '#050505', card: '#18181b' },
-                        primary: '#ef4444'
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
                     },
                     animation: {
-                        'slide-up': 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-                        'fade-in': 'fadeIn 0.3s ease-out',
-                        'pulse-slow': 'pulseRed 3s infinite',
+                        'slide-up': 'slideUp 0.3s ease-out forwards',
+                        'nebula': 'nebula 20s infinite alternate',
+                        'float': 'float 6s ease-in-out infinite',
+                        'fade-in': 'fadeIn 0.5s ease-out forwards',
                     },
                     keyframes: {
                         slideUp: { '0%': { transform: 'translateY(100%)' }, '100%': { transform: 'translateY(0)' } },
-                        fadeIn: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
-                        pulseRed: { '0%, 100%': { opacity: '1' }, '50%': { opacity: '0.5' } }
+                        nebula: { '0%': { transform: 'scale(1)', opacity: '0.3' }, '100%': { transform: 'scale(1.2)', opacity: '0.6' } },
+                        float: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-10px)' } },
+                        fadeIn: { from: { opacity: 0, transform: 'translateY(-5px)' }, to: { opacity: 1, transform: 'translateY(0)' } }
                     }
                 }
             }
         }
     </script>
 
-    <!-- Custom CSS -->
     <style>
-        :root { --sat: env(safe-area-inset-top); --sab: env(safe-area-inset-bottom); }
-        body { background-color: #050505; color: #e5e5e5; -webkit-tap-highlight-color: transparent; overscroll-behavior-y: none; height: 100dvh; }
-        
-        /* Inputs & Form */
-        input, select, textarea { font-size: 16px !important; }
-        input:focus, select:focus, textarea:focus { outline: none; }
-        
-        /* Scrollbars */
-        ::-webkit-scrollbar { width: 4px; height: 4px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
-        
-        /* Glass Effects */
-        .glass { background: rgba(24, 24, 27, 0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.05); }
-        .glass-highlight { background: linear-gradient(145deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%); border: 1px solid rgba(255,255,255,0.08); }
-        .glass-nav { background: rgba(5, 5, 5, 0.90); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-top: 1px solid rgba(255,255,255,0.08); padding-bottom: var(--sab); }
-        .glass-input { background: #09090b; border: 1px solid #27272a; color: white; transition: all 0.2s; box-shadow: inset 0 2px 4px rgba(0,0,0,0.3); }
-        .glass-input:focus { border-color: #ef4444; box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2); background: #18181b; }
-
-        /* Links & Nav */
-        .g-links { display: flex; align-items: center; gap: 20px; overflow-x: auto; }
-        .g-link { font-size: 11px; font-weight: 700; letter-spacing: 0.05em; color: #71717a; transition: color 0.2s; text-decoration: none; white-space: nowrap; text-transform: uppercase; cursor: pointer; }
-        .g-link:hover, .g-link.active { color: white; }
-        .g-link.active { position: relative; }
-        .g-link.active::after { content: ''; position: absolute; bottom: -18px; left: 0; width: 100%; height: 2px; background: #ef4444; box-shadow: 0 -4px 10px rgba(239, 68, 68, 0.5); }
-        
-        /* Modal Animation & Layout */
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); z-index: 1100; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; display: flex; align-items: flex-end; justify-content: center; }
-        .modal-overlay.is-open { opacity: 1; pointer-events: auto; }
-        
-        .modal-sheet { background: #121212; width: 100%; max-height: 90dvh; border-top-left-radius: 32px; border-top-right-radius: 32px; border-top: 1px solid #27272a; padding: 24px; overflow-y: auto; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); padding-bottom: calc(40px + var(--sab)); }
-        .modal-overlay.is-open .modal-sheet { transform: translateY(0); }
-        
-        @media (min-width: 768px) {
-            .modal-overlay { align-items: center; padding: 20px; }
-            .modal-sheet { width: 100%; max-width: 420px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8); max-height: 85vh; padding: 24px; transform: scale(0.95); opacity: 0; transition: all 0.2s ease-out; }
-            .modal-overlay.is-open .modal-sheet { transform: scale(1); opacity: 1; }
-            main { padding-bottom: 20px !important; }
+        :root {
+            --bg: #000000;
+            --card: #111111;
+            --border: #262626;
+            --input-bg: #0a0a0a;
+            --text: #e5e5e5;
+            --text-mute: #737373;
+            --brand: #dc2626;
+            --login-brand: #E70000;
+            --money: #16a34a;
+            --alert: #b91c1c;
+            --warn: #d97706;
+            --header-bg: rgba(0, 0, 0, 0.9);
         }
 
-        /* Chips */
-        .chip { transition: all 0.2s; user-select: none; white-space: nowrap; border: 1px solid #27272a; background: #09090b; color: #a1a1aa; }
-        .chip:hover { background: #27272a; }
-        .chip.active { background: #ef4444; color: white; transform: scale(1.02); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); border-color: #ef4444; }
+        * { -webkit-tap-highlight-color: transparent; outline: none; transition: background-color 0.3s, color 0.3s, border-color 0.3s; }
+        body { overflow-x: hidden; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* Loader */
-        .loader-dots span { width: 8px; height: 8px; border-radius: 50%; background: #ef4444; display: inline-block; animation: loader 1.4s infinite ease-in-out both; margin: 0 2px; }
-        .loader-dots span:nth-child(1) { animation-delay: -0.32s; }
-        .loader-dots span:nth-child(2) { animation-delay: -0.16s; }
-        @keyframes loader { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        .animate-pulse-custom { animation: pulse 2s infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .spinner { border: 4px solid var(--border); border-top: 4px solid var(--brand); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; }
+
+        .aurora-bg {
+            position: fixed; inset: 0; z-index: -2;
+            background: radial-gradient(circle at 50% 50%, rgba(50, 0, 0, 0.4) 0%, transparent 60%),
+                        radial-gradient(circle at 80% 20%, rgba(231, 0, 0, 0.15) 0%, transparent 40%),
+                        radial-gradient(circle at 20% 80%, rgba(100, 0, 0, 0.2) 0%, transparent 40%);
+            filter: blur(80px);
+            pointer-events: none;
+        }
+
+        .grid-bg {
+            position: fixed; inset: 0; z-index: -1;
+            background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
+            pointer-events: none;
+        }
+
+        .input-gp {
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); color: white;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); width: 100%; padding: 14px 16px; border-radius: 16px;
+            font-size: 0.95rem; font-weight: 500;
+        }
+        .input-gp:focus { border-color: var(--login-brand); outline: none; background: rgba(231,0,0,0.05); box-shadow: 0 0 20px rgba(231,0,0,0.2); transform: translateY(-2px); }
+        .input-gp::placeholder { color: rgba(255,255,255,0.3); }
+
+        .glass-panel {
+            background: rgba(15, 15, 15, 0.6); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .auth-switch { position: relative; display: flex; background: rgba(0,0,0,0.3); border-radius: 12px; padding: 4px; margin-bottom: 24px; }
+        .auth-switch button { flex: 1; padding: 8px; font-size: 0.8rem; font-weight: 700; z-index: 1; color: #666; transition: 0.3s; }
+        .auth-switch button.active { color: white; }
+        .auth-switch-glider {
+            position: absolute; top: 4px; left: 4px; height: calc(100% - 8px); width: calc(50% - 4px);
+            background: #222; border-radius: 8px; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid rgba(255,255,255,0.1);
+        }
+        .auth-mode-register .auth-switch-glider { transform: translateX(100%); }
+
+        .btn-glow { position: relative; overflow: hidden; background: var(--login-brand); color: white; transition: all 0.3s; }
+        .btn-glow:hover { box-shadow: 0 0 30px rgba(231, 0, 0, 0.4); transform: translateY(-2px); }
+
+        .g-link.active { color: #fff; border-bottom: 2px solid #fff; padding-bottom: 2px; }
+        .btn-ctrl.active-bath { background: var(--card); color: var(--brand) !important; border-color: var(--brand) !important; box-shadow: inset 0 0 0 1px var(--brand); }
+        .btn-ctrl.active-food { background: var(--card); color: var(--warn) !important; border-color: var(--warn) !important; box-shadow: inset 0 0 0 1px var(--warn); }
+        .btn-ctrl.active-pause { background: #451a03; color: #fb923c !important; border-color: #fb923c !important; box-shadow: inset 0 0 0 1px #f97316; }
+        .side-clock.active { opacity: 1; transform: scale(1.05); background: transparent; }
+        .side-clock.danger .side-val { color: var(--alert) !important; }
+        .tab { @apply text-text-mute rounded-md transition-all; }
+        .tab.active { @apply bg-white/10 text-white shadow-sm ring-1 ring-white/10 font-bold; }
+        input, select, textarea { color: var(--text) !important; }
     </style>
 </head>
-<body class="flex flex-col overflow-hidden text-sm sm:text-base">
 
-    <!-- Loading Screen -->
-    <div id="loading-screen" class="fixed inset-0 bg-[#050505] z-[2000] flex flex-col items-center justify-center transition-opacity duration-500">
-        <div class="loader-dots mb-4"><span></span><span></span><span></span></div>
-        <p class="text-zinc-500 font-bold text-xs uppercase tracking-widest animate-pulse">Cargando...</p>
-    </div>
+<body class="bg-bg text-text font-sans selection:bg-brand selection:text-white min-h-screen">
 
-    <!-- LOGIN / REGISTER VIEW -->
-    <div id="login-view" class="fixed inset-0 z-[1500] bg-[#050505] flex flex-col items-center justify-center p-6 hidden">
-        <!-- Radial BG -->
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-red-600/20 rounded-full blur-[100px] pointer-events-none"></div>
+    <div class="aurora-bg"></div>
+    <div class="grid-bg"></div>
 
-        <div class="w-full max-w-sm glass rounded-[2rem] p-8 relative z-10 fade-in border border-white/10">
+    <!-- LOGIN / REGISTER -->
+    <div id="login-view" class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-[#030000]">
+        <div class="absolute top-8 left-8 flex items-center gap-3 animate-fade-in opacity-50">
+             <div class="relative w-8 h-8 flex items-center justify-center"><i class="ph-fill ph-planet text-2xl text-brand"></i></div>
+            <span class="font-bold tracking-widest text-lg">GOD'S PLAN</span>
+        </div>
+        <div class="w-full max-w-md animate-float">
             <div class="text-center mb-8">
-                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-red-600 to-orange-600 flex items-center justify-center mx-auto mb-4 shadow-[0_0_20px_rgba(220,38,38,0.4)] text-white">
-                    <i class="ph-bold ph-wallet text-3xl"></i>
-                </div>
-                <h1 class="text-2xl font-extrabold text-white tracking-tight">GOD'S PLAN</h1>
-                <p class="text-zinc-500 text-xs font-bold uppercase tracking-widest mt-1">Control Financiero</p>
+                <h1 class="text-4xl md:text-5xl font-black tracking-tight mb-2">GOD'S PLAN</h1>
+                <p class="text-zinc-500 text-sm font-mono tracking-widest uppercase">Portal de Acceso Centralizado</p>
             </div>
-
-            <!-- Toggles -->
-            <div class="flex p-1 bg-zinc-900 rounded-xl mb-6 border border-zinc-800">
-                <button onclick="window.authApp.toggleAuth('login')" id="tab-login" class="flex-1 py-2.5 text-xs font-bold rounded-lg bg-[#27272a] text-white shadow transition-all">INGRESAR</button>
-                <button onclick="window.authApp.toggleAuth('register')" id="tab-register" class="flex-1 py-2.5 text-xs font-bold text-zinc-500 hover:text-zinc-300 transition-all">REGISTRO</button>
-            </div>
-
-            <form onsubmit="event.preventDefault(); window.authApp.handleAuthSubmit();" class="space-y-4">
-                <div id="field-name" class="hidden">
-                    <div class="relative">
-                        <i class="ph-bold ph-user absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500"></i>
-                        <input type="text" id="input-name" class="glass-input w-full pl-10 pr-4 py-3.5 rounded-xl outline-none text-sm font-bold placeholder-zinc-700" placeholder="Tu Nombre">
+            <div class="glass-panel rounded-3xl p-8 relative overflow-hidden">
+                <div class="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-1 bg-brand blur-md opacity-50"></div>
+                <div class="auth-switch" id="auth-switch-container">
+                    <div class="auth-switch-glider"></div>
+                    <button onclick="window.app.toggleAuth('login')" id="tab-login" class="active">INGRESAR</button>
+                    <button onclick="window.app.toggleAuth('register')" id="tab-register">REGISTRARSE</button>
+                </div>
+                <form onsubmit="event.preventDefault(); window.app.handleAuthSubmit();" class="flex flex-col gap-5">
+                    <div id="field-name" class="hidden transition-all duration-300">
+                        <div class="relative group">
+                            <i class="ph-bold ph-user absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-brand transition-colors"></i>
+                            <input type="text" id="input-name" class="input-gp pl-12" placeholder="Tu Nombre">
+                        </div>
                     </div>
-                </div>
-                <div>
-                    <div class="relative">
-                        <i class="ph-bold ph-envelope absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500"></i>
-                        <input type="text" id="input-id" class="glass-input w-full pl-10 pr-4 py-3.5 rounded-xl outline-none text-sm font-bold placeholder-zinc-700" placeholder="Usuario o Email" required>
+                    <div class="relative group">
+                        <i class="ph-bold ph-identification-card absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-brand transition-colors"></i>
+                        <input type="text" id="input-id" class="input-gp pl-12" placeholder="ID (Ej: 17620) o Email" required>
                     </div>
-                </div>
-                <div>
-                    <div class="relative">
-                        <i class="ph-bold ph-lock-key absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500"></i>
-                        <input type="password" id="input-pass" class="glass-input w-full pl-10 pr-4 py-3.5 rounded-xl outline-none text-sm font-bold placeholder-zinc-700" placeholder="••••••••" required>
+                    <div class="relative group">
+                        <i class="ph-bold ph-lock-key absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-brand transition-colors"></i>
+                        <input type="password" id="input-pass" class="input-gp pl-12" placeholder="Contraseña Maestra" required>
                     </div>
+                    <div id="auth-error-msg" class="hidden p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-xs font-bold text-center flex items-center justify-center gap-2">
+                        <i class="ph-fill ph-warning-circle"></i> <span id="auth-error-txt">Error</span>
+                    </div>
+                    <button type="submit" id="btn-submit" class="btn-glow w-full py-4 rounded-xl font-black uppercase tracking-widest text-sm mt-2 flex items-center justify-center gap-2 group cursor-pointer">
+                        <span id="btn-text">INICIAR SESIÓN</span> <i class="ph-bold ph-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                    </button>
+                </form>
+                <div class="relative my-6 text-center">
+                    <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-white/10"></div></div>
+                    <span class="relative bg-[#0a0a0a] px-2 text-[10px] text-zinc-600 font-bold uppercase tracking-widest">O accede con</span>
                 </div>
-
-                <div id="auth-error-msg" class="hidden p-3 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-2">
-                    <i class="ph-fill ph-warning-circle text-red-500"></i>
-                    <span id="auth-error-txt" class="text-xs text-red-400 font-bold">Error</span>
-                </div>
-
-                <button type="submit" id="btn-submit" class="w-full bg-white text-black py-3.5 rounded-xl font-black text-sm hover:bg-zinc-200 active:scale-[0.98] transition-all flex items-center justify-center gap-2 mt-2 shadow-[0_0_15px_rgba(255,255,255,0.1)]">
-                    <span id="btn-text">INICIAR SESIÓN</span>
-                    <i class="ph-bold ph-arrow-right"></i>
+                <button onclick="window.app.loginGoogle()" class="w-full bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/30 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-3 group cursor-pointer">
+                    <i class="ph-bold ph-google-logo text-xl group-hover:text-brand transition-colors"></i> <span>Google Account</span>
                 </button>
-            </form>
+            </div>
         </div>
+        <footer class="absolute bottom-4 left-0 w-full text-center pointer-events-none opacity-30">
+            <p class="text-[10px] font-mono tracking-[0.5em] text-white">SYSTEM v2.0 // SECURE</p>
+        </footer>
     </div>
 
-    <!-- MAIN APP STRUCTURE -->
-    
-    <!-- NAVBAR TOP -->
-    <nav id="global-nav" class="h-16 bg-[#050505]/90 backdrop-blur-md border-b border-white/5 flex items-center justify-between px-5 shrink-0 z-50 sticky top-0">
-        <div class="flex items-center gap-3">
-             <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-red-600 to-orange-600 flex items-center justify-center text-white shadow-lg shadow-red-900/20">
-                <i class="ph-bold ph-wallet text-lg"></i>
+    <!-- APP PRINCIPAL -->
+    <div id="app-view" class="hidden min-h-screen pb-24 pt-20">
+        <!-- HEADER OPTIMIZADO PARA MÓVIL Y DESKTOP -->
+        <header class="bg-card border-b border-border fixed top-0 left-0 w-full z-50 flex items-center justify-between px-3 py-2 shadow-sm transition-all h-[60px] md:h-auto">
+            <!-- TITULO / LOGO -->
+            <div class="text-lg md:text-[1.1rem] font-extrabold flex items-center gap-2 text-text uppercase shrink-0">
+                <i class="ph-fill ph-timer text-brand text-2xl md:text-xl"></i> 
+                <!-- El texto se oculta en móvil para ahorrar espacio -->
+                <span class="hidden md:inline">Adherencia</span>
             </div>
-            <div>
-                <h1 class="text-white font-extrabold text-sm tracking-tight leading-none">GOD'S PLAN</h1>
-                <p class="text-[10px] text-zinc-500 font-medium" id="current-date-header">...</p>
-            </div>
-        </div>
-        
-        <!-- Desktop Tabs -->
-        <div class="hidden md:flex g-links no-scrollbar ml-8">
-            <a onclick="switchTab('dashboard')" class="g-link active" id="desk-link-dashboard">Panel</a>
-            <a onclick="switchTab('history')" class="g-link" id="desk-link-history">Historial</a>
-            <a onclick="switchTab('fixed')" class="g-link" id="desk-link-fixed">Fijos</a>
-            <a onclick="switchTab('settings')" class="g-link" id="desk-link-settings">Ajustes</a>
-        </div>
 
-        <div class="flex items-center gap-3">
-            <div class="flex items-center gap-1 bg-zinc-900/50 border border-white/5 rounded-full p-1">
-                 <button onclick="changeMonth(-1)" class="w-6 h-6 rounded-full flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-800 transition"><i class="ph-bold ph-caret-left"></i></button>
-                 <button onclick="goToCurrentMonth()" class="text-[10px] font-bold text-zinc-300 px-2 uppercase hover:text-white transition">Hoy</button>
-                 <button onclick="changeMonth(1)" class="w-6 h-6 rounded-full flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-800 transition"><i class="ph-bold ph-caret-right"></i></button>
-            </div>
-            <div class="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-400" id="user-avatar">
-                <i class="ph-fill ph-user"></i>
-            </div>
-        </div>
-    </nav>
-
-    <!-- CONTENT -->
-    <main id="main-container" class="flex-1 overflow-y-auto pb-32 relative scroll-smooth overflow-x-hidden md:px-6 hidden">
-        <div class="w-full max-w-lg md:max-w-5xl mx-auto h-full pt-6">
-
-            <!-- VIEW: DASHBOARD -->
-            <section id="view-dashboard" class="px-5 md:px-0 fade-in">
+            <!-- CONTROLES DERECHA -->
+            <div class="flex items-center gap-1.5 md:gap-2 justify-end flex-1 min-w-0">
                 
-                <div class="grid grid-cols-1 md:grid-cols-12 md:gap-8 items-start">
+                <!-- RELOJ -->
+                <div id="realWorldClock" class="flex flex-col items-end px-1.5 md:px-2 py-0.5 border-r border-border/50 shrink-0">
+                    <div class="flex text-[0.6rem] text-text-mute font-black tracking-wider leading-none mb-0.5 items-center gap-1 justify-end">
+                          <span id="syncDot" class="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block animate-pulse"></span> Hora Real
+                    </div>
+                    <!-- En móvil solo mostramos la hora, un poco más pequeña -->
+                    <div class="text-xs md:text-[0.9rem] font-mono font-bold text-text leading-none tabular-nums text-right" id="realClockTime">--:--:--</div>
+                </div>
+
+                <!-- BOTONES DE ACCIÓN -->
+                <button class="bg-transparent border border-border text-text-mute text-lg md:text-base p-1.5 rounded-lg flex items-center justify-center hover:bg-bg hover:text-text cursor-pointer shrink-0" onclick="window.app.syncServerTime()" title="Sincronizar Forzado"><i class="ph-bold ph-arrows-clockwise"></i></button>
+                <button class="bg-transparent border border-border text-text-mute text-lg md:text-base p-1.5 rounded-lg flex items-center justify-center hover:bg-bg hover:text-text cursor-pointer shrink-0" onclick="window.app.openConfigModal()" title="Menú"><i class="ph-bold ph-gear"></i></button>
+
+                <!-- NAVEGACIÓN FECHAS -->
+                <div class="flex items-center gap-0.5 md:gap-1 bg-bg px-1.5 py-1 rounded-full border border-border ml-1 shrink-0">
+                    <button class="bg-transparent border-none text-text-mute cursor-pointer text-lg md:text-[1.1rem] p-1 rounded-full flex items-center justify-center hover:text-text" onclick="window.app.changeMonth(-1)"><i class="ph-bold ph-caret-left"></i></button>
+                    <!-- Mes más pequeño en móvil -->
+                    <span class="text-[0.7rem] md:text-[0.85rem] font-extrabold uppercase text-text min-w-[55px] md:min-w-[75px] text-center whitespace-nowrap" id="monthLabel">--</span>
+                    <button class="bg-transparent border-none text-text-mute cursor-pointer text-lg md:text-[1.1rem] p-1 rounded-full flex items-center justify-center hover:text-text" onclick="window.app.changeMonth(1)"><i class="ph-bold ph-caret-right"></i></button>
+                    <button class="bg-transparent border-none text-brand cursor-pointer text-lg md:text-[1.1rem] p-1 rounded-full flex items-center justify-center hover:scale-110 transition-transform" onclick="window.app.goToday()"><i class="ph-bold ph-calendar-check"></i></button>
+                </div>
+            </div>
+        </header>
+
+        <div class="w-full max-w-[900px] mx-auto p-4 overflow-x-hidden">
+            <!-- RELOJ PRINCIPAL -->
+            <div class="bg-card rounded-2xl border border-border py-5 px-2.5 text-center mb-5 shadow-sm relative overflow-hidden">
+                <div id="mainLoader" class="absolute inset-0 bg-card/90 flex items-center justify-center z-10 rounded-2xl hidden">
+                    <div class="spinner"></div>
+                </div>
+                <div class="grid grid-cols-[1fr_1.2fr_1fr] items-center gap-1.5 mb-5" id="timersDisplay" style="display:none;">
+                    <button class="side-clock flex flex-col items-center justify-center opacity-50 p-1.5 rounded-lg relative z-10 w-full h-full border-none hover:bg-bg hover:opacity-100 hover:scale-105 transition-all cursor-pointer" id="clockBathContainer" onclick="window.app.openTimerEdit('bathroom')" type="button">
+                        <div class="text-[0.65rem] font-extrabold uppercase text-text-mute mb-1 flex items-center justify-center gap-1">
+                            <i class="ph-bold ph-toilet"></i> Baño <i class="ph-bold ph-pencil-simple text-brand text-[0.9em]"></i>
+                        </div>
+                        <div class="font-mono font-bold text-base text-text tabular-nums" id="dispBath">00:00</div>
+                        <div class="text-[0.65rem] text-text-mute mt-0.5">/ <span id="limBath">15</span>m</div>
+                        <div id="remBath" class="text-[0.7rem] font-extrabold mt-1 text-money">Restan: --</div>
+                    </button>
                     
-                    <!-- LEFT COL -->
-                    <div class="md:col-span-5 lg:col-span-4 md:sticky md:top-6">
-                        
-                        <!-- Header Balance -->
-                        <div class="flex justify-between items-end mb-4 px-1">
-                            <div>
-                                <p class="text-[10px] text-zinc-500 font-bold uppercase tracking-[0.2em] mb-1">
-                                    BALANCE <span id="balance-period-label">MENSUAL</span>
-                                </p>
-                                <div class="flex items-center gap-2">
-                                     <button onclick="toggleBalanceMode()" class="text-xs bg-zinc-900 border border-zinc-800 px-2 py-1 rounded text-zinc-400 hover:text-white transition">
-                                        <i class="ph-bold ph-arrows-left-right"></i> Cambiar
-                                     </button>
-                                </div>
-                            </div>
-                            <div id="payday-badge" class="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1.5 rounded-full font-mono font-bold whitespace-nowrap shadow-[0_0_10px_rgba(16,185,129,0.1)]">
-                                ...
-                            </div>
-                        </div>
-
-                        <!-- MAIN CARD -->
-                        <div class="glass rounded-[2rem] p-6 relative overflow-hidden group mb-6 shadow-2xl shadow-black/50 border-t border-white/10">
-                            <!-- Glow -->
-                            <div class="absolute -top-12 -right-12 w-40 h-40 bg-red-600/30 rounded-full blur-[60px] animate-pulse-slow"></div>
-                            
-                            <div class="relative z-10">
-                                <div class="flex justify-between items-start mb-2">
-                                    <span class="text-xs font-bold text-zinc-400 uppercase tracking-widest">Disponible</span>
-                                    <button onclick="openAdjustModal()" class="text-zinc-500 hover:text-white transition"><i class="ph-bold ph-scales"></i></button>
-                                </div>
-                                
-                                <!-- Big Money -->
-                                <div class="text-5xl font-black text-white tracking-tighter mb-4 break-all relative leading-none" id="total-balance">
-                                    $0.00
-                                </div>
-                                
-                                <!-- Progress -->
-                                <div class="mb-6">
-                                    <div class="flex justify-between text-[10px] font-bold text-zinc-500 mb-1.5 uppercase tracking-wide">
-                                        <span>Gasto vs Ingreso</span>
-                                        <span id="progress-percent">0%</span>
-                                    </div>
-                                    <div class="h-1.5 bg-zinc-800 rounded-full w-full overflow-hidden">
-                                        <div id="balance-progress" class="h-full bg-gradient-to-r from-red-500 to-orange-500 w-0 transition-all duration-1000"></div>
-                                    </div>
-                                </div>
-
-                                <!-- Stats Footer -->
-                                <div class="grid grid-cols-2 gap-4 border-t border-white/5 pt-4">
-                                    <div>
-                                        <span class="block text-[10px] text-zinc-500 uppercase font-bold mb-1 flex items-center gap-1"><i class="ph-fill ph-arrow-down-left text-emerald-500"></i> Ingresos</span>
-                                        <span class="text-lg font-bold text-zinc-200 tracking-tight" id="total-income">$0.00</span>
-                                    </div>
-                                    <div class="text-right">
-                                        <span class="block text-[10px] text-zinc-500 uppercase font-bold mb-1 flex items-center gap-1 justify-end">Gastos <i class="ph-fill ph-arrow-up-right text-red-500"></i></span>
-                                        <span class="text-lg font-bold text-red-400 tracking-tight" id="total-expense">$0.00</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Quick Actions -->
-                        <div class="grid grid-cols-2 gap-3 mb-8">
-                            <button onclick="openAddModal('income')" class="glass-highlight h-14 rounded-2xl text-emerald-500 font-bold text-xs flex items-center justify-center gap-2 transition-all hover:bg-emerald-500/10 border-transparent hover:border-emerald-500/30 active:scale-95">
-                                <i class="ph-bold ph-arrow-down-left text-lg"></i> INGRESO
-                            </button>
-                            <button onclick="openAddModal('expense')" class="glass-highlight h-14 rounded-2xl text-white font-bold text-xs flex items-center justify-center gap-2 transition-all hover:bg-red-600 hover:border-red-500 bg-red-600/10 border-red-600/30 active:scale-95 shadow-[0_0_15px_rgba(220,38,38,0.1)]">
-                                <i class="ph-bold ph-minus text-lg"></i> GASTO
-                            </button>
-                        </div>
-                        
-                        <!-- Chart Container (Desktop) -->
-                        <div class="hidden md:block glass rounded-2xl p-5 border border-white/5 mb-6">
-                            <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4">Análisis</h3>
-                            <div class="h-40 relative">
-                                <canvas id="financeChart"></canvas>
-                            </div>
-                        </div>
-
-                    </div> <!-- End Left Col -->
-
-                    <!-- RIGHT COL (List) -->
-                    <div class="md:col-span-7 lg:col-span-8">
-                        
-                        <!-- Daily Budget Info (Formula) -->
-                         <div class="mb-6 bg-gradient-to-r from-zinc-900 to-black border border-zinc-800 rounded-2xl p-4 flex justify-between items-center relative overflow-hidden">
-                            <div class="absolute inset-0 bg-blue-500/5"></div>
-                            <div class="relative z-10">
-                                <p class="text-[10px] text-zinc-500 font-bold uppercase tracking-wider mb-0.5">Presupuesto Diario</p>
-                                <p class="text-[10px] text-blue-400 font-bold" id="formula-days-left">Calculando...</p>
-                            </div>
-                            <span class="font-mono font-bold text-2xl text-white relative z-10 tracking-tight" id="formula-daily">$0.00</span>
-                        </div>
-
-                        <div class="flex justify-between items-center mb-4 px-1">
-                             <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest">Actividad Reciente</h3>
-                             <button onclick="switchTab('history')" class="text-[10px] font-bold text-red-500 hover:text-white transition">VER TODO</button>
-                        </div>
-
-                        <div id="recent-list" class="space-y-3 pb-24 md:pb-0">
-                            <!-- JS Injected -->
-                        </div>
+                    <div class="flex flex-col items-center">
+                        <div class="text-[0.7rem] uppercase tracking-widest text-text-mute font-extrabold mb-1.5" id="clockStatus">TURNO ACTIVO</div>
+                        <div class="text-[clamp(2.5rem,12vw,4rem)] font-extrabold text-text tabular-nums leading-none" id="clockDisplay">00:00</div>
+                        <button id="shiftStartTime" onclick="window.app.openStartTimeEdit()" class="text-[0.7rem] text-text-mute font-bold mt-1.5 uppercase tracking-wide opacity-80 hover:text-text hover:opacity-100 transition-all cursor-pointer bg-transparent border-none flex items-center justify-center gap-1 mx-auto" style="display:none;"></button>
+                        <div id="networkTimeBadge" class="text-[0.65rem] text-amber-500 font-bold mt-1.5 opacity-100 transition-all duration-300 flex items-center gap-1"><i class="ph-bold ph-warning"></i> Local</div>
                     </div>
 
-                </div>
-            </section>
-
-            <!-- VIEW: HISTORY -->
-            <section id="view-history" class="px-5 md:px-0 hidden fade-in">
-                <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-xl font-bold text-white">Historial</h2>
-                     <div class="flex gap-2">
-                        <button onclick="filterHistory('all')" class="filter-btn active chip px-4 py-1.5 rounded-full text-[10px] font-bold uppercase" data-filter="all">Todos</button>
-                        <button onclick="filterHistory('income')" class="filter-btn chip px-4 py-1.5 rounded-full text-[10px] font-bold uppercase" data-filter="income">Ingresos</button>
-                        <button onclick="filterHistory('expense')" class="filter-btn chip px-4 py-1.5 rounded-full text-[10px] font-bold uppercase" data-filter="expense">Gastos</button>
-                    </div>
-                </div>
-                <div id="full-history-list" class="space-y-3 pb-24">
-                    <div class="text-center text-zinc-600 py-10 text-xs font-mono">Cargando datos...</div>
-                </div>
-            </section>
-
-            <!-- VIEW: FIXED -->
-            <section id="view-fixed" class="px-5 md:px-0 hidden fade-in">
-                <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-xl font-bold text-white">Pagos Fijos</h2>
-                    <button onclick="openModal('fixed-modal')" class="bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 border border-zinc-700 transition">
-                        <i class="ph-bold ph-plus"></i> Nuevo
+                    <button class="side-clock flex flex-col items-center justify-center opacity-50 p-1.5 rounded-lg relative z-10 w-full h-full border-none hover:bg-bg hover:opacity-100 hover:scale-105 transition-all cursor-pointer" id="clockFoodContainer" onclick="window.app.openTimerEdit('food')" type="button">
+                        <div class="text-[0.65rem] font-extrabold uppercase text-text-mute mb-1 flex items-center justify-center gap-1">
+                            <i class="ph-bold ph-hamburger"></i> Comida <i class="ph-bold ph-pencil-simple text-brand text-[0.9em]"></i>
+                        </div>
+                        <div class="font-mono font-bold text-base text-text tabular-nums" id="dispFood">00:00</div>
+                        <div class="text-[0.65rem] text-text-mute mt-0.5">/ <span id="limFood">45</span>m</div>
+                        <div id="remFood" class="text-[0.7rem] font-extrabold mt-1 text-money">Restan: --</div>
                     </button>
                 </div>
-                 <div class="bg-blue-900/10 border border-blue-500/20 rounded-xl p-4 mb-6 flex gap-3">
-                    <i class="ph-fill ph-info text-blue-400 text-lg flex-shrink-0"></i>
-                    <p class="text-xs text-blue-200/70 leading-relaxed">Gestiona tus suscripciones y rentas. Pulsa el check para registrarlos como pagados este mes. Los pagados no se restan del presupuesto diario.</p>
+                <div id="offlineDisplay" style="display:block;">
+                    <div class="text-[0.7rem] uppercase tracking-widest text-text-mute font-extrabold mb-2.5">FUERA DE TURNO</div>
+                    <div class="text-[clamp(2.5rem,12vw,4rem)] font-extrabold text-text-mute tabular-nums leading-none mb-5">--:--:--</div>
                 </div>
-                <div id="fixed-list" class="grid grid-cols-1 md:grid-cols-2 gap-3 pb-24">
-                    <!-- JS Injected -->
-                </div>
-            </section>
+                <div class="grid grid-cols-2 gap-2.5 mt-4" id="actionButtons"></div>
+            </div>
 
-            <!-- VIEW: SETTINGS -->
-            <section id="view-settings" class="px-5 md:px-0 hidden fade-in">
-                <h2 class="text-xl font-bold text-white mb-6">Configuración</h2>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pb-24">
-                    <!-- Account -->
-                    <div class="bg-zinc-900/50 border border-zinc-800 p-6 rounded-2xl">
-                         <div class="flex items-center gap-4 mb-6">
-                            <div class="w-12 h-12 rounded-full bg-zinc-800 flex items-center justify-center text-white text-xl">
-                                <i class="ph-bold ph-user"></i>
-                            </div>
-                            <div>
-                                <h3 class="font-bold text-white text-lg" id="user-display-name">Usuario</h3>
-                                <p class="text-xs text-zinc-500 font-mono" id="user-display-email">ID: ...</p>
-                            </div>
+            <!-- KPIs -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div class="bg-card border border-border rounded-xl p-4">
+                    <div class="flex justify-between items-center mb-2.5 pb-2 border-b border-border">
+                        <div class="flex items-center gap-2">
+                            <button class="bg-transparent border-none text-brand cursor-pointer text-base p-0 hover:text-white" onclick="window.app.changeWeek(-1)"><i class="ph-bold ph-caret-left"></i></button>
+                            <span class="text-[0.9rem] font-extrabold text-text">Semana <span id="weekNum">--</span></span>
+                            <button class="bg-transparent border-none text-brand cursor-pointer text-base p-0 hover:text-white" onclick="window.app.changeWeek(1)"><i class="ph-bold ph-caret-right"></i></button>
                         </div>
-                        <button onclick="window.authApp.logout()" class="w-full py-3 rounded-xl border border-zinc-700 text-zinc-400 font-bold text-xs hover:bg-red-900/20 hover:text-red-400 hover:border-red-900/50 transition">
-                            CERRAR SESIÓN
-                        </button>
+                        <span id="weekBalance" class="px-2 py-0.5 rounded-md font-extrabold text-[0.8rem] bg-emerald-900/30 text-emerald-400">0h</span>
                     </div>
-
-                    <!-- Payday Config -->
-                    <div class="bg-zinc-900/50 border border-zinc-800 p-6 rounded-2xl">
-                        <h3 class="font-bold text-zinc-200 text-sm mb-4 flex items-center gap-2"><i class="ph-fill ph-calendar text-emerald-500"></i> Frecuencia de Cobro</h3>
-                        
-                        <div class="space-y-3 mb-4">
-                            <label class="flex items-center gap-3 p-3 bg-black/40 border border-zinc-800 rounded-xl cursor-pointer hover:border-zinc-600 transition has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-900/10">
-                                <input type="radio" name="pay-freq" value="biweekly" class="hidden peer" onchange="togglePaydayInput()">
-                                <div class="w-4 h-4 rounded-full border border-zinc-600 peer-checked:bg-emerald-500 peer-checked:border-emerald-500 flex items-center justify-center">
-                                    <div class="w-1.5 h-1.5 bg-black rounded-full opacity-0 peer-checked:opacity-100"></div>
-                                </div>
-                                <span class="text-xs font-bold text-zinc-300">Quincenal (15 y 30)</span>
-                            </label>
-
-                            <label class="flex items-center gap-3 p-3 bg-black/40 border border-zinc-800 rounded-xl cursor-pointer hover:border-zinc-600 transition has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-900/10">
-                                <input type="radio" name="pay-freq" value="biweekly-custom" class="hidden peer" onchange="togglePaydayInput()">
-                                <div class="w-4 h-4 rounded-full border border-zinc-600 peer-checked:bg-emerald-500 peer-checked:border-emerald-500 flex items-center justify-center">
-                                    <div class="w-1.5 h-1.5 bg-black rounded-full opacity-0 peer-checked:opacity-100"></div>
-                                </div>
-                                <span class="text-xs font-bold text-zinc-300">Quincenal (Personalizado)</span>
-                            </label>
-                            
-                            <label class="flex items-center gap-3 p-3 bg-black/40 border border-zinc-800 rounded-xl cursor-pointer hover:border-zinc-600 transition has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-900/10">
-                                <input type="radio" name="pay-freq" value="monthly" class="hidden peer" onchange="togglePaydayInput()">
-                                <div class="w-4 h-4 rounded-full border border-zinc-600 peer-checked:bg-emerald-500 peer-checked:border-emerald-500 flex items-center justify-center">
-                                    <div class="w-1.5 h-1.5 bg-black rounded-full opacity-0 peer-checked:opacity-100"></div>
-                                </div>
-                                <span class="text-xs font-bold text-zinc-300">Mensual</span>
-                            </label>
-                        </div>
-
-                        <!-- Monthly Input -->
-                        <div id="monthly-select-container" class="hidden mb-4">
-                            <label class="text-[10px] text-zinc-500 font-bold uppercase mb-2 block">Día de pago</label>
-                            <select id="payday-select" class="glass-input w-full p-2.5 rounded-lg text-xs font-bold appearance-none">
-                                <option value="">Seleccionar día</option>
-                            </select>
-                        </div>
-
-                        <!-- Custom Bi-weekly Input -->
-                        <div id="biweekly-custom-container" class="hidden grid grid-cols-2 gap-4 mb-4">
-                            <div>
-                                <label class="text-[10px] text-zinc-500 font-bold uppercase mb-2 block">Pago 1</label>
-                                <select id="payday-1-select" class="glass-input w-full p-2.5 rounded-lg text-xs font-bold appearance-none">
-                                    <!-- JS fills -->
-                                </select>
-                            </div>
-                            <div>
-                                <label class="text-[10px] text-zinc-500 font-bold uppercase mb-2 block">Pago 2</label>
-                                <select id="payday-2-select" class="glass-input w-full p-2.5 rounded-lg text-xs font-bold appearance-none">
-                                    <!-- JS fills -->
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <button onclick="saveSettings()" class="w-full bg-white text-black py-3 rounded-xl font-bold text-xs hover:bg-zinc-200 transition">GUARDAR CAMBIOS</button>
-                    </div>
-
-                    <!-- Forced Savings -->
-                    <div class="bg-zinc-900/50 border border-zinc-800 p-6 rounded-2xl md:col-span-2">
-                        <h3 class="font-bold text-zinc-200 text-sm mb-4 flex items-center gap-2"><i class="ph-fill ph-brain text-purple-500"></i> Psicología Financiera</h3>
-                        <label class="flex items-center justify-between p-4 bg-black/40 border border-zinc-800 rounded-xl cursor-pointer hover:border-zinc-600 transition">
-                            <div class="flex flex-col">
-                                <span class="text-sm font-bold text-zinc-200">Modo "Ahorro Forzoso"</span>
-                                <span class="text-[10px] text-zinc-500 font-medium">Oculta el 10% de tu saldo disponible para engañar a tu cerebro.</span>
-                            </div>
-                            <div class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" id="toggle-forced-savings" class="sr-only peer" onchange="saveSettings()">
-                                <div class="w-11 h-6 bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
-                            </div>
-                        </label>
-                    </div>
-
-                    <!-- Data -->
-                    <div class="bg-zinc-900/50 border border-zinc-800 p-6 rounded-2xl md:col-span-2">
-                        <h3 class="font-bold text-zinc-200 text-sm mb-4">Gestión de Datos</h3>
-                        <div class="flex gap-4">
-                            <button onclick="exportData()" class="flex-1 bg-black border border-zinc-800 py-4 rounded-xl text-zinc-400 font-bold text-xs hover:text-white transition flex flex-col items-center gap-2">
-                                <i class="ph-bold ph-download-simple text-xl"></i> Backup JSON
-                            </button>
-                            <button onclick="document.getElementById('import-file').click()" class="flex-1 bg-black border border-zinc-800 py-4 rounded-xl text-zinc-400 font-bold text-xs hover:text-white transition flex flex-col items-center gap-2">
-                                <i class="ph-bold ph-upload-simple text-xl"></i> Restaurar
-                            </button>
-                            <input type="file" id="import-file" accept=".json" class="hidden" onchange="importData(this)">
-                        </div>
-                        <button onclick="resetApp()" class="w-full mt-4 text-red-500 text-[10px] font-bold uppercase hover:text-red-400">Eliminar todos mis datos</button>
+                    <div class="flex justify-between items-center mb-1 text-[0.9rem]"><span class="text-text-mute">Meta</span><strong id="weekTarget" class="text-text">0:00</strong></div>
+                    <div class="flex justify-between items-center mb-1 text-[0.9rem]"><span class="text-text-mute">Trabajado</span><strong class="text-brand" id="weekWorked">0:00</strong></div>
+                    <div class="flex justify-between items-center mt-2.5 pt-1.5 border-t border-dashed border-border text-[0.9rem]">
+                        <span class="text-text-mute">Pago Extra</span><strong class="text-money" id="weekPay">$0</strong>
                     </div>
                 </div>
-            </section>
 
-        </div>
-    </main>
-
-    <!-- MOBILE FAB -->
-    <div class="md:hidden fixed bottom-[calc(90px+var(--sab))] left-1/2 -translate-x-1/2 z-40" id="fab-container">
-        <button onclick="openAddModal('expense')" class="w-16 h-16 bg-gradient-to-b from-red-600 to-red-700 rounded-full flex items-center justify-center text-white shadow-[0_8px_30px_rgba(220,38,38,0.4)] border-[6px] border-[#050505] active:scale-90 transition-transform duration-200 group relative overflow-hidden">
-            <div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 rounded-full"></div>
-            <i class="ph-bold ph-plus text-3xl relative z-10"></i>
-        </button>
-    </div>
-
-    <!-- MOBILE NAV -->
-    <nav class="md:hidden glass-nav fixed bottom-0 w-full h-[80px] grid grid-cols-4 z-50 pb-2" id="bottom-nav">
-        <button onclick="switchTab('dashboard')" class="nav-btn group flex flex-col items-center justify-center gap-1 text-zinc-600 active:scale-95 transition-transform" id="nav-dashboard">
-            <div class="relative p-1"><i class="ph-fill ph-squares-four text-2xl group-[.active]:text-white"></i></div>
-        </button>
-        <button onclick="switchTab('history')" class="nav-btn group flex flex-col items-center justify-center gap-1 text-zinc-600 active:scale-95 transition-transform" id="nav-history">
-            <div class="relative p-1"><i class="ph-fill ph-list-dashes text-2xl group-[.active]:text-white"></i></div>
-        </button>
-         <button onclick="switchTab('fixed')" class="nav-btn group flex flex-col items-center justify-center gap-1 text-zinc-600 active:scale-95 transition-transform" id="nav-fixed">
-            <div class="relative p-1"><i class="ph-fill ph-receipt text-2xl group-[.active]:text-white"></i></div>
-        </button>
-        <button onclick="switchTab('settings')" class="nav-btn group flex flex-col items-center justify-center gap-1 text-zinc-600 active:scale-95 transition-transform" id="nav-settings">
-            <div class="relative p-1"><i class="ph-fill ph-gear text-2xl group-[.active]:text-white"></i></div>
-        </button>
-    </nav>
-
-    <!-- MODAL: TRANSACTION -->
-    <div id="transaction-modal" class="modal-overlay">
-        <div id="transaction-modal-content" class="modal-sheet">
-             <div class="w-12 h-1.5 bg-zinc-800 rounded-full mx-auto mb-6 shrink-0 md:hidden"></div>
-             
-             <div class="flex justify-between items-center mb-6">
-                <h3 class="text-lg font-bold text-white" id="modal-tx-title">Nuevo Movimiento</h3>
-                <button onclick="closeModal('transaction-modal')" class="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white transition">
-                    <i class="ph-bold ph-x"></i>
-                </button>
-             </div>
-
-             <form id="transaction-form" onsubmit="addTransaction(event)">
-                <!-- Hidden inputs -->
-                <div class="hidden">
-                     <input type="radio" name="type" value="expense" id="radio-expense" checked>
-                     <input type="radio" name="type" value="income" id="radio-income">
-                     <input type="hidden" id="t-fixed-id">
-                </div>
-
-                <div class="relative mb-8 text-center">
-                    <span class="absolute left-1/2 -translate-x-[calc(50%+80px)] top-1/2 -translate-y-1/2 text-2xl text-zinc-600 font-light pointer-events-none">$</span>
-                    <input type="number" id="t-amount" step="0.01" class="bg-transparent text-center text-5xl font-black text-white w-full border-none outline-none focus:ring-0 p-0 placeholder-zinc-800 h-16" placeholder="0" required>
-                </div>
-
-                <div class="mb-6">
-                    <label class="text-[10px] text-zinc-500 font-bold uppercase ml-1 mb-2 block">Categoría</label>
-                    <div class="flex flex-wrap gap-2" id="category-chips">
-                        <!-- JS renders chips -->
+                <div class="bg-card border border-border rounded-xl p-4">
+                    <div class="flex justify-between items-center mb-2.5 pb-2 border-b border-border">
+                        <span class="text-[0.9rem] font-extrabold text-text">Quincena <span id="qName">--</span></span>
+                        <span id="qBalance" class="px-2 py-0.5 rounded-md font-extrabold text-[0.8rem] bg-emerald-900/30 text-emerald-400">0h</span>
                     </div>
-                    <input type="hidden" id="t-category" required>
+                    <div class="flex justify-between items-center mb-1 text-[0.9rem]"><span class="text-text-mute">Meta</span><strong id="qTarget" class="text-text">0:00</strong></div>
+                    <div class="flex justify-between items-center mb-1 text-[0.9rem]"><span class="text-text-mute">Trabajado</span><strong class="text-brand" id="qWorked">0:00</strong></div>
+                    <div class="flex justify-between items-center mt-2.5 text-[0.9rem]"><span class="text-alert">Faltas</span><strong class="text-alert" id="qFails">0</strong></div>
                 </div>
+            </div>
 
-                <div class="mb-4">
-                     <label class="text-[10px] text-zinc-500 font-bold uppercase ml-1 mb-1 block">Concepto</label>
-                     <input type="text" id="t-title" class="glass-input w-full p-4 rounded-xl text-sm font-bold placeholder-zinc-600" placeholder="¿Qué compraste?">
+            <!-- LISTA HISTORIAL -->
+            <div class="bg-card border border-border rounded-2xl overflow-hidden shadow-sm mb-6">
+                <div class="px-5 py-4 bg-bg/50 font-extrabold text-text-mute text-[0.75rem] border-b border-border flex justify-between items-center tracking-wide">
+                    <span id="logListTitle">HISTORIAL</span>
+                    <button onclick="window.app.openModal()" class="border-none bg-transparent text-brand font-extrabold cursor-pointer hover:underline">+ MANUAL</button>
                 </div>
-
-                <div class="mb-6">
-                    <label class="text-[10px] text-zinc-500 font-bold uppercase ml-1 mb-1 block">Fecha y Hora</label>
-                    <input type="datetime-local" id="t-date" class="glass-input w-full p-4 rounded-xl text-sm font-bold text-center appearance-none" required>
-                </div>
-
-                <div class="flex flex-col gap-3">
-                    <button type="submit" id="btn-save-tx" class="w-full bg-white text-black h-14 rounded-2xl font-black text-sm hover:bg-zinc-200 transition-colors shadow-[0_0_20px_rgba(255,255,255,0.1)]">
-                        GUARDAR
-                    </button>
-                    <!-- Delete button hidden by default, shown via JS when editing -->
-                    <button type="button" id="btn-delete-tx" onclick="deleteCurrentTransaction()" class="hidden w-full bg-red-500/10 text-red-500 h-14 rounded-2xl font-black text-sm hover:bg-red-500 hover:text-white transition-colors border border-red-500/20">
-                        ELIMINAR
-                    </button>
-                </div>
-             </form>
+                <div id="logList"></div>
+            </div>
         </div>
     </div>
 
-    <!-- MODAL: ADJUST -->
-    <div id="adjust-modal" class="modal-overlay">
-        <div id="adjust-modal-content" class="modal-sheet">
-            <div class="w-12 h-1.5 bg-zinc-800 rounded-full mx-auto mb-6 shrink-0 md:hidden"></div>
-             <div class="flex justify-between items-center mb-6">
-                <h3 class="text-lg font-bold text-white"><i class="ph-bold ph-scales text-blue-500"></i> Ajustar Saldo</h3>
-                <button onclick="closeModal('adjust-modal')" class="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white transition">
-                    <i class="ph-bold ph-x"></i>
-                </button>
-             </div>
-             <div class="bg-blue-900/10 border border-blue-500/20 p-4 rounded-2xl mb-6 text-center">
-                 <p class="text-[10px] text-blue-400 uppercase font-bold mb-1">Saldo Sistema (Real)</p>
-                 <p class="text-2xl font-black text-white" id="adjust-current-display">$0.00</p>
-             </div>
-             <form onsubmit="submitAdjustment(event)">
-                <div class="relative mb-6">
-                     <p class="text-center text-[10px] text-zinc-500 uppercase font-bold mb-2">¿Cuánto tienes realmente?</p>
-                    <input type="number" id="adjust-amount" step="0.01" class="glass-input w-full p-4 rounded-2xl text-3xl font-black text-center text-white placeholder-zinc-800" placeholder="0.00" required>
-                </div>
-                <button type="submit" class="w-full bg-blue-600 text-white h-14 rounded-2xl font-black text-sm hover:bg-blue-500 transition-colors">AJUSTAR AHORA</button>
-             </form>
-        </div>
-    </div>
+    <!-- BOTÓN SCROLL TO TOP -->
+    <button id="scrollTopBtn" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="fixed bottom-6 left-6 w-11 h-11 rounded-full bg-brand text-white shadow-lg shadow-brand/20 border border-white/10 z-50 flex items-center justify-center translate-y-20 opacity-0 transition-all duration-300 hover:scale-110 cursor-pointer">
+        <i class="ph-bold ph-arrow-up text-xl"></i>
+    </button>
 
-    <!-- MODAL: FIXED -->
-    <div id="fixed-modal" class="modal-overlay">
-        <div id="fixed-modal-content" class="modal-sheet">
-            <div class="w-12 h-1.5 bg-zinc-800 rounded-full mx-auto mb-6 shrink-0 md:hidden"></div>
+    <!-- MODALES -->
+    <div class="modal fixed inset-0 w-screen h-screen z-[1000] hidden bg-black/80 backdrop-blur-sm" id="navModal" onclick="window.app.toggleModal('navModal', false)">
+        <div class="absolute bottom-0 left-0 w-full bg-card rounded-t-2xl p-6 border-t border-border animate-slide-up" onclick="event.stopPropagation()">
             <div class="flex justify-between items-center mb-6">
-                <h3 class="text-lg font-bold text-white">Nuevo Pago Fijo</h3>
-                <button onclick="closeModal('fixed-modal')" class="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white transition">
-                    <i class="ph-bold ph-x"></i>
-                </button>
-             </div>
-             <form id="fixed-form" onsubmit="addFixed(event)">
-                 <div class="mb-4">
-                      <label class="text-[10px] text-zinc-500 font-bold uppercase ml-1 mb-1 block">Nombre</label>
-                      <input type="text" id="f-title" class="glass-input w-full p-4 rounded-xl text-sm font-bold placeholder-zinc-600" placeholder="Ej. Netflix" required>
-                 </div>
-                 <div class="grid grid-cols-2 gap-4 mb-6">
-                      <div>
-                        <label class="text-[10px] text-zinc-500 font-bold uppercase ml-1 mb-1 block">Monto</label>
-                        <input type="number" id="f-amount" step="0.01" class="glass-input w-full p-4 rounded-xl text-sm font-bold placeholder-zinc-600" placeholder="0.00" required>
-                      </div>
-                      <div>
-                        <label class="text-[10px] text-zinc-500 font-bold uppercase ml-1 mb-1 block">Día Pago</label>
-                        <select id="f-day" class="glass-input w-full p-4 rounded-xl text-sm font-bold appearance-none">
-                            <!-- JS Fills -->
-                        </select>
-                      </div>
-                 </div>
-                 <button type="submit" class="w-full bg-white text-black h-14 rounded-2xl font-black text-sm hover:bg-zinc-200 transition-colors">GUARDAR</button>
-             </form>
+                <span class="font-bold text-lg text-text">Navegación</span>
+                 <button onclick="window.app.toggleModal('navModal', false)" class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 text-text-mute hover:text-text cursor-pointer"><i class="ph-bold ph-x text-lg"></i></button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal fixed inset-0 w-screen h-screen bg-black/80 backdrop-blur-sm hidden items-center justify-center z-[1000]" id="configModal">
+        <div class="bg-card rounded-2xl w-[90%] max-w-[400px] max-h-[90vh] overflow-hidden flex flex-col border border-border shadow-2xl relative">
+            <div class="p-4 border-b border-border flex justify-between items-center bg-bg/50 backdrop-blur-sm sticky top-0 z-10">
+                <div class="flex items-center gap-2"> <i class="ph-fill ph-planet text-xl text-brand"></i> <span class="font-bold text-text text-sm tracking-wide">CONFIGURACIÓN</span> </div>
+                <button onclick="window.app.toggleModal('configModal', false)" class="text-text-mute hover:text-text transition-colors cursor-pointer"> <i class="ph-bold ph-x text-lg"></i> </button>
+            </div>
+            <div class="p-5 overflow-y-auto flex-1">
+                <div class="flex p-1 bg-input-bg rounded-xl mb-6 border border-border/50">
+                    <div class="tab active flex-1 text-center py-2 text-[0.75rem] font-bold cursor-pointer hover:text-text" onclick="window.app.switchTab('tSettings')">Ajustes</div>
+                    <div class="tab flex-1 text-center py-2 text-[0.75rem] font-bold cursor-pointer hover:text-text" onclick="window.app.switchTab('tData')">Datos</div>
+                </div>
+                <div id="tSettings" class="tab-content active block animate-fade-in">
+                    <div class="mb-6">
+                        <p class="text-[0.65rem] font-black text-brand mb-3 uppercase tracking-wider flex items-center gap-1"><i class="ph-bold ph-clock"></i> Límites (Min)</p>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-input-bg p-3 rounded-xl border border-border"><label class="block text-text-mute text-[0.65rem] font-bold mb-1 uppercase">Baño</label><input type="number" id="cfgBath" class="bg-transparent w-full font-bold text-lg text-text focus:outline-none"></div>
+                            <div class="bg-input-bg p-3 rounded-xl border border-border"><label class="block text-text-mute text-[0.65rem] font-bold mb-1 uppercase">Comida</label><input type="number" id="cfgFood" class="bg-transparent w-full font-bold text-lg text-text focus:outline-none"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-[0.65rem] font-black text-money mb-3 uppercase tracking-wider flex items-center gap-1"><i class="ph-bold ph-currency-dollar"></i> Pagos</p>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-input-bg p-3 rounded-xl border border-border"><label class="block text-text-mute text-[0.65rem] font-bold mb-1 uppercase">Base</label><input type="number" id="cfgRate1" class="bg-transparent w-full font-bold text-lg text-text focus:outline-none"></div>
+                            <div class="bg-input-bg p-3 rounded-xl border border-border"><label class="block text-text-mute text-[0.65rem] font-bold mb-1 uppercase">Extra</label><input type="number" id="cfgRate2" class="bg-transparent w-full font-bold text-lg text-text focus:outline-none"></div>
+                        </div>
+                    </div>
+                </div>
+                <div id="tData" class="tab-content hidden animate-fade-in">
+                    <div class="space-y-3">
+                        <button class="w-full p-4 rounded-xl font-bold cursor-pointer border border-border bg-input-bg hover:bg-bg transition-colors flex items-center gap-3 text-left group" onclick="window.app.toggleModal('importModal', true)">
+                            <div class="w-10 h-10 rounded-lg bg-emerald-900/30 text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform"><i class="ph-bold ph-file-csv text-xl"></i></div>
+                            <div><div class="text-sm text-text">Importar Excel</div></div>
+                        </button>
+                        <button class="w-full p-4 rounded-xl font-bold cursor-pointer border border-border bg-input-bg hover:bg-bg transition-colors flex items-center gap-3 text-left group" onclick="window.app.exportBackup()">
+                             <div class="w-10 h-10 rounded-lg bg-blue-900/30 text-blue-400 flex items-center justify-center group-hover:scale-110 transition-transform"><i class="ph-bold ph-download-simple text-xl"></i></div>
+                            <div><div class="text-sm text-text">Descargar Backup</div></div>
+                        </button>
+                          <button class="w-full p-4 rounded-xl font-bold cursor-pointer border border-border bg-input-bg hover:bg-bg transition-colors flex items-center gap-3 text-left group" onclick="document.getElementById('importJsonInput').click()">
+                            <div class="w-10 h-10 rounded-lg bg-violet-900/30 text-violet-400 flex items-center justify-center group-hover:scale-110 transition-transform"><i class="ph-bold ph-upload-simple text-xl"></i></div>
+                            <div><div class="text-sm text-text">Importar JSON</div></div>
+                        </button>
+                        <input type="file" id="importJsonInput" accept=".json" class="hidden" onchange="window.app.importJson(this)">
+                    </div>
+                    <div class="border-t border-border my-6"></div>
+                    <button class="w-full p-4 rounded-xl font-bold cursor-pointer border border-red-900 bg-red-900/10 text-red-500 hover:bg-red-900/20 transition-colors flex items-center justify-center gap-2" onclick="window.app.resetData()"><i class="ph-bold ph-trash"></i> Reiniciar</button>
+                </div>
+            </div>
+             <div class="p-4 border-t border-border bg-card">
+                <button class="w-full bg-brand text-white p-3.5 rounded-xl font-extrabold cursor-pointer border-none hover:bg-blue-600 transition-colors shadow-lg shadow-brand/20" onclick="window.app.saveConfig()">GUARDAR CAMBIOS</button>
+            </div>
         </div>
     </div>
 
-    <!-- TOAST -->
-    <div id="toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 bg-zinc-900 border border-zinc-800 text-white px-6 py-3 rounded-full shadow-2xl z-[2000] transition-all duration-300 opacity-0 translate-y-[-20px] pointer-events-none flex items-center gap-2">
-        <div class="w-2 h-2 bg-emerald-500 rounded-full shadow-[0_0_10px_#10b981]"></div>
-        <span id="toast-msg" class="text-xs font-bold uppercase tracking-wide">Acción realizada</span>
+    <!-- LOG MODAL -->
+    <div class="modal fixed inset-0 w-screen h-screen bg-black/80 backdrop-blur-sm hidden items-center justify-center z-[1000]" id="logModal">
+        <div class="bg-card rounded-2xl w-[90%] max-w-[380px] p-5 border border-border">
+            <h3 class="text-text font-bold text-lg mb-4">Registro Manual</h3>
+            <label class="block text-text-mute text-xs font-extrabold mb-1 uppercase">Fecha</label>
+            <input type="date" id="inpDate" class="bg-input-bg border border-border w-full p-2.5 rounded-lg font-semibold text-text mb-2.5 [color-scheme:dark]">
+            <label class="block text-text-mute text-xs font-extrabold mb-1 uppercase">Tipo</label>
+            <select id="inpType" onchange="window.app.toggleTimeInputs()" class="bg-input-bg border border-border w-full p-2.5 rounded-lg font-semibold text-text mb-2.5">
+                <option value="Laboral">Laboral</option>
+                <option value="Descanso">Descanso</option>
+                <option value="Falta">Falta</option>
+                <option value="Vacaciones">Vacaciones</option>
+            </select>
+            <div id="timeInputs">
+                <div class="grid grid-cols-2 gap-2.5 mb-2.5">
+                    <div><label class="block text-text-mute text-xs font-extrabold mb-1 uppercase">Entrada</label><input type="time" id="inpIn" onchange="window.app.calcPreview()" class="bg-input-bg border border-border w-full p-2.5 rounded-lg font-semibold text-text [color-scheme:dark]"></div>
+                    <div><label class="block text-text-mute text-xs font-extrabold mb-1 uppercase">Salida</label><input type="time" id="inpOut" onchange="window.app.calcPreview()" class="bg-input-bg border border-border w-full p-2.5 rounded-lg font-semibold text-text [color-scheme:dark]"></div>
+                </div>
+                <div class="bg-bg/50 p-2.5 rounded-lg mb-2.5 border border-border">
+                    <label class="block text-text-mute text-xs font-extrabold mb-1 uppercase">Minutos Reales:</label>
+                    <div class="grid grid-cols-3 gap-1.5">
+                        <div><label class="block text-text-mute text-[0.65rem] font-bold mb-1">Baño</label><input type="number" id="inpBathTime" value="0" oninput="window.app.calcPreview()" class="bg-input-bg border border-border w-full p-1.5 rounded text-sm text-text"></div>
+                        <div><label class="block text-text-mute text-[0.65rem] font-bold mb-1">Comida</label><input type="number" id="inpFoodTime" value="0" oninput="window.app.calcPreview()" class="bg-input-bg border border-border w-full p-1.5 rounded text-sm text-text"></div>
+                        <div><label class="block text-text-mute text-[0.65rem] font-bold mb-1">Pausa</label><input type="number" id="inpPauseTime" value="0" oninput="window.app.calcPreview()" class="bg-input-bg border border-border w-full p-1.5 rounded text-sm text-text"></div>
+                    </div>
+                </div>
+                <p class="text-right text-text-mute text-sm">Neto: <strong id="calcHoursDisplay" class="text-text">0:00</strong></p>
+            </div>
+            <button class="w-full p-3 rounded-lg font-extrabold cursor-pointer border-none mb-2.5 bg-brand text-white hover:bg-blue-600 transition-colors mt-4" onclick="window.app.saveLog()">Guardar</button>
+            <button class="w-full p-3 rounded-lg font-extrabold cursor-pointer mb-2.5 text-alert border border-alert bg-transparent hidden hover:bg-alert/10" id="btnDelete" onclick="window.app.deleteLog()">Eliminar</button>
+            <button class="w-full p-3 rounded-lg font-extrabold cursor-pointer border border-border bg-transparent text-text-mute hover:text-text hover:bg-white/5" onclick="window.app.toggleModal('logModal', false)">Cancelar</button>
+        </div>
     </div>
 
-    <!-- FIREBASE & LOGIC -->
+    <!-- CLOCK OUT MODAL -->
+    <div class="modal fixed inset-0 w-screen h-screen bg-black/80 backdrop-blur-sm hidden items-center justify-center z-[1000]" id="clockOutModal">
+        <div class="bg-card rounded-2xl w-[90%] max-w-[380px] p-5 border border-border text-center">
+            <h3 class="text-text font-bold text-lg mb-4">¿Terminar Turno?</h3>
+            <button class="w-full p-3 rounded-lg font-extrabold cursor-pointer border-none bg-alert text-white mt-4 mb-2.5 hover:bg-red-600 transition-colors" onclick="window.app.finishShiftReal()">TERMINAR</button>
+            <button class="w-full p-3 rounded-lg font-extrabold cursor-pointer border border-border bg-transparent text-text-mute hover:text-text hover:bg-white/5" onclick="window.app.toggleModal('clockOutModal', false)">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- EDITAR TIEMPO MODAL -->
+    <div class="modal fixed inset-0 w-screen h-screen bg-black/80 backdrop-blur-sm hidden items-center justify-center z-[1000]" id="timerEditModal">
+        <div class="bg-card rounded-2xl w-[90%] max-w-[380px] p-5 border border-border">
+            <h3 class="text-text font-bold text-lg mb-4">Ajustar Tiempo</h3>
+            <p class="text-sm mb-2.5 text-text-mute" id="timerEditDesc">Ingresa el tiempo acumulado para <strong id="timerEditTitle" class="text-text">--</strong>.</p>
+            <input type="text" id="inpTimerEdit" placeholder="Ej. 3:14" class="text-lg text-center bg-input-bg border border-border w-full p-2.5 rounded-lg font-semibold text-text [color-scheme:dark]">
+            <div class="flex gap-2.5 mt-4">
+                <button class="flex-1 bg-brand text-white p-3 rounded-lg font-extrabold cursor-pointer border-none hover:bg-blue-600 transition-colors" onclick="window.app.saveTimerEdit()">Actualizar</button>
+                <button class="flex-1 bg-transparent border border-border text-text-mute p-3 rounded-lg font-extrabold cursor-pointer hover:text-text hover:bg-white/5" onclick="window.app.toggleModal('timerEditModal', false)">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- UTILS MODALS -->
+    <div class="modal fixed inset-0 w-screen h-screen bg-black/80 backdrop-blur-sm hidden items-center justify-center z-[1000]" id="msgModal">
+        <div class="bg-card rounded-2xl w-[90%] max-w-[380px] p-5 border border-border text-center">
+            <i id="msgIcon" class="text-[2.5rem] mb-2.5 block"></i>
+            <p id="msgText" class="font-bold mb-5 text-text"></p>
+            <button class="w-full p-3 rounded-lg font-extrabold cursor-pointer border-none bg-brand text-white hover:bg-blue-600 transition-colors" onclick="window.app.toggleModal('msgModal', false)">OK</button>
+        </div>
+    </div>
+    <div class="modal fixed inset-0 w-screen h-screen bg-black/80 backdrop-blur-sm hidden items-center justify-center z-[1000]" id="importModal">
+        <div class="bg-card rounded-2xl w-[90%] max-w-[380px] p-5 border border-border">
+            <h3 class="text-text font-bold text-lg mb-4">Importar Excel</h3>
+            <textarea id="importTextArea" rows="6" class="font-mono text-xs w-full bg-input-bg border border-border p-2.5 rounded-lg text-text mb-4 placeholder-zinc-700" placeholder="Pegar CSV aquí..."></textarea>
+            <button class="w-full p-3 rounded-lg font-extrabold cursor-pointer border-none mb-2.5 bg-brand text-white hover:bg-blue-600 transition-colors" onclick="window.app.processImport()">Procesar</button>
+            <button class="w-full p-3 rounded-lg font-extrabold cursor-pointer border border-border bg-transparent text-text-mute hover:text-text hover:bg-white/5" onclick="window.app.toggleModal('importModal', false)">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- LÓGICA OPTIMIZADA (SINGLE MODULE) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithCustomToken, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, collection, getDocs, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        // 1. Configuración Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyC-cUzYmh5G9y_W2RXbO1Uma4DlKKmnnss",
             authDomain: "odsplan-adherencia.firebaseapp.com",
@@ -615,58 +470,228 @@
             messagingSenderId: "660801277434",
             appId: "1:660801277434:web:3a37ece56538dc2b22a843"
         };
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+        // 2. Inicialización de Servicios
+        let auth, db;
+        try {
+            const fbApp = initializeApp(firebaseConfig);
+            auth = getAuth(fbApp);
+            db = getFirestore(fbApp);
+        } catch (e) {
+            console.error("Firebase Init Error:", e);
+        }
 
-        let currentUser = null;
-        let listeners = [];
-        let editingTransactionId = null;
+        // Variable global para almacenar el 'unsubscribe' del listener
+        let unsubscribeListener = null;
 
-        // GLOBAL STATE
-        window.appData = {
-            transactions: [],
-            fixed: [],
-            settings: { frequency: 'biweekly', payday: null, forcedSavings: false }
+        // 3. Sistema de Caché del DOM (OPTIMIZACIÓN CRÍTICA)
+        const elmCache = new Map();
+        const getElement = (id) => {
+            if (!elmCache.has(id)) {
+                const el = document.getElementById(id);
+                if (el) elmCache.set(id, el);
+                return el;
+            }
+            return elmCache.get(id);
+        };
+        const setText = (id, text) => { const el = getElement(id); if (el) el.textContent = text; };
+        
+        // 4. Formateadores Reutilizables (OPTIMIZACIÓN FECHAS)
+        const formatters = {
+            clock: new Intl.DateTimeFormat('es-MX', { timeZone: 'America/Mexico_City', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }),
+            shortTime: new Intl.DateTimeFormat('es-MX', { timeZone: 'America/Mexico_City', hour: '2-digit', minute: '2-digit', hour12: false }),
+            dateISO: new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Mexico_City' }) // YYYY-MM-DD
         };
 
-        // --- AUTH FUNCTIONS ---
-        window.authApp = {
-            isRegistering: false,
-            toggleAuth(mode) {
-                this.isRegistering = (mode === 'register');
-                const nameField = document.getElementById('field-name');
-                const btnLogin = document.getElementById('tab-login');
-                const btnReg = document.getElementById('tab-register');
-                const err = document.getElementById('auth-error-msg');
-                if(err) err.classList.add('hidden');
+        // 5. Lógica de la App (Integrada en el Módulo)
+        window.app = {
+            data: { logs: [], config: { rate1: 50, rate2: 75, bathAllow: 15, foodAllow: 45 }, activeShift: null },
+            userId: null, offline: false, editingId: null, date: new Date(), timer: null, processing: false, 
+            editingTimerType: null, timeOffset: 0, isRegistering: false, isTimeSynced: false,
 
-                document.getElementById('btn-text').textContent = this.isRegistering ? "CREAR CUENTA" : "INICIAR SESIÓN";
-                
-                if (this.isRegistering) {
-                    nameField.classList.remove('hidden');
-                    btnReg.className = "flex-1 py-2.5 text-xs font-bold rounded-lg bg-[#27272a] text-white shadow transition-all";
-                    btnLogin.className = "flex-1 py-2.5 text-xs font-bold text-zinc-500 hover:text-zinc-300 transition-all";
-                } else {
-                    nameField.classList.add('hidden');
-                    btnLogin.className = "flex-1 py-2.5 text-xs font-bold rounded-lg bg-[#27272a] text-white shadow transition-all";
-                    btnReg.className = "flex-1 py-2.5 text-xs font-bold text-zinc-500 hover:text-zinc-300 transition-all";
+            // --- SISTEMA DE TIEMPO REAL ROBUSTO ---
+            async syncServerTime() {
+                const setTime = (serverDateStr) => {
+                     // Parsear diferentes formatos
+                     const serverTime = new Date(serverDateStr).getTime();
+                     if(isNaN(serverTime)) throw new Error('Invalid Date');
+                     
+                     const deviceTime = Date.now();
+                     this.timeOffset = serverTime - deviceTime;
+                     this.isTimeSynced = true;
+                     console.log("Sincronizado con Servidor. Offset:", this.timeOffset);
+                     this.updateSyncUI(true);
+                };
+
+                this.updateSyncUI(false); // Poner en ámbar/aviso mientras carga
+
+                try {
+                    // INTENTO 1: timeapi.io (Suele ser más rápido y estable)
+                    const r = await fetch('https://timeapi.io/api/Time/current/zone?timeZone=America/Mexico_City', { cache: "no-store" });
+                    if(r.ok) {
+                        const data = await r.json();
+                        setTime(data.dateTime);
+                        return;
+                    }
+                    throw new Error('TimeAPI falló');
+                } catch (e) {
+                    console.warn("Fuente Primaria falló, intentando respaldo...", e);
+                    try {
+                        // INTENTO 2: WorldTimeAPI (Respaldo clásico)
+                        const r2 = await fetch('https://worldtimeapi.org/api/timezone/America/Mexico_City', { cache: "no-store" });
+                        if(r2.ok) {
+                            const data2 = await r2.json();
+                            setTime(data2.datetime);
+                            return;
+                        }
+                    } catch (e2) {
+                        console.error("Fallo total de sincronización horaria. Usando reloj local.", e2);
+                        this.isTimeSynced = false;
+                        this.timeOffset = 0; // Fallback a local
+                        this.updateSyncUI(false);
+                    }
                 }
             },
-            async handleAuthSubmit() {
-                const btn = document.getElementById('btn-submit');
-                const id = document.getElementById('input-id').value.trim();
-                const pass = document.getElementById('input-pass').value;
-                const name = document.getElementById('input-name').value.trim();
+
+            updateSyncUI(synced) {
+                const dot = getElement('syncDot');
+                const badge = getElement('networkTimeBadge');
                 
-                if (!id || !pass) return this.showError("Faltan datos");
-                if (this.isRegistering && !name) return this.showError("Nombre requerido");
+                if(dot) {
+                    // Verde solido si synced, Ambar parpadeante si no
+                    dot.className = synced 
+                        ? "w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block shadow-[0_0_8px_#10b981] transition-all duration-500" 
+                        : "w-1.5 h-1.5 rounded-full bg-amber-500 inline-block animate-pulse transition-all duration-500";
+                }
+                
+                if(badge) {
+                    badge.innerHTML = synced ? '<i class="ph-bold ph-globe"></i> Red' : '<i class="ph-bold ph-warning"></i> Local';
+                    badge.className = synced 
+                        ? "text-[0.65rem] text-emerald-400 font-bold mt-1.5 opacity-100 flex items-center gap-1 transition-colors duration-500" 
+                        : "text-[0.65rem] text-amber-500 font-bold mt-1.5 opacity-100 flex items-center gap-1 transition-colors duration-500";
+                }
+            },
+
+            init() {
+                // 1. Sincronización Inmediata
+                this.syncServerTime();
+                
+                // 2. Re-sincronización periódica (cada 5 min para evitar drift)
+                setInterval(() => this.syncServerTime(), 300000); 
+
+                this.updateRealClockUI();
+                setInterval(() => this.updateRealClockUI(), 1000);
+                
+                // Scroll Listener
+                window.addEventListener('scroll', () => {
+                    const btn = getElement('scrollTopBtn');
+                    if (btn) {
+                        if (window.scrollY > 300) btn.classList.remove('translate-y-20', 'opacity-0');
+                        else btn.classList.add('translate-y-20', 'opacity-0');
+                    }
+                });
+                
+                if (!auth) return this.goOffline();
+
+                onAuthStateChanged(auth, async u => {
+                    if (u) { 
+                        this.userId = u.uid; 
+                        this.offline = false; 
+                        this.renderAuth(u);
+                        getElement('login-view')?.classList.add('hidden');
+                        const appView = getElement('app-view');
+                        if(appView) {
+                            appView.classList.remove('hidden');
+                            setTimeout(() => appView.classList.add('animate-fade-in'), 50);
+                        }
+                        
+                        // 1. Iniciar listener en tiempo real (Reemplazo de load())
+                        this.listenToChanges(); 
+
+                    } else {
+                        // Limpiar listener al salir
+                        if (unsubscribeListener) {
+                            unsubscribeListener();
+                            unsubscribeListener = null;
+                        }
+
+                        this.userId = null;
+                        const appView = getElement('app-view');
+                        if(appView) {
+                            appView.classList.add('hidden');
+                            appView.classList.remove('animate-fade-in');
+                        }
+                        getElement('login-view')?.classList.remove('hidden');
+                        this.data = { logs: [], config: { rate1: 50, rate2: 75, bathAllow: 15, foodAllow: 45 }, activeShift: null };
+                        
+                        // 2. Solo cargamos local si NO hay usuario
+                        this.loadLocal(); 
+                    }
+                });
+            },
+
+            // --- REAL TIME LISTENER (NUEVO) ---
+            listenToChanges() {
+                if (this.offline || !this.userId) return;
+                
+                // Si ya hay un listener, lo detenemos para no duplicar
+                if (unsubscribeListener) unsubscribeListener();
+
+                // ESCUCHA EN TIEMPO REAL (PUSH)
+                try {
+                    unsubscribeListener = onSnapshot(doc(db, "users", this.userId, "attendance", "sync_state"), (docSnap) => {
+                        if (docSnap.exists()) {
+                            const remoteData = docSnap.data();
+                            
+                            // Actualizamos datos locales con la verdad de la nube
+                            this.data = remoteData;
+                            this.data.logs = this.data.logs || [];
+                            this.data.config = this.data.config || { rate1: 50, rate2: 75, bathAllow: 15, foodAllow: 45 };
+                            
+                            // SANITIZACIÓN: Si activeShift existe pero tiene start corrupto, lo corregimos
+                            if (this.data.activeShift && !Number.isFinite(this.data.activeShift.start)) {
+                                console.warn("Detectado turno corrupto, reparando...");
+                                this.data.activeShift.start = Date.now();
+                            }
+
+                            this.render();
+                            this.uiClock();
+                        }
+                    }, (error) => {
+                        console.error("Error en listener:", error);
+                        // Opcional: Manejar desconexión visual
+                    });
+                } catch (e) {
+                    console.error("Error iniciando snapshot:", e);
+                }
+            },
+
+            // --- AUTH ---
+            toggleAuth(mode) {
+                this.isRegistering = (mode === 'register');
+                getElement('auth-switch-container')?.classList.toggle('auth-mode-register', this.isRegistering);
+                getElement('tab-login')?.classList.toggle('active', !this.isRegistering);
+                getElement('tab-register')?.classList.toggle('active', this.isRegistering);
+                getElement('auth-error-msg')?.classList.add('hidden');
+                setText('btn-text', this.isRegistering ? "CREAR CUENTA" : "INICIAR SESIÓN");
+                const nameField = getElement('field-name');
+                if(nameField) this.isRegistering ? nameField.classList.remove('hidden') : nameField.classList.add('hidden');
+            },
+
+            async handleAuthSubmit() {
+                const btn = getElement('btn-submit');
+                const id = getElement('input-id')?.value.trim();
+                const pass = getElement('input-pass')?.value;
+                const name = getElement('input-name')?.value.trim();
+                const errMsg = getElement('auth-error-msg');
+
+                if (!id || !pass) return this.showAuthError("Completa todos los campos");
+                if (this.isRegistering && !name) return this.showAuthError("El nombre es obligatorio");
                 
                 const finalId = id.includes('@') ? id : `${id}@godsplan.site`;
-                btn.disabled = true;
-                btn.innerHTML = '<i class="ph ph-circle-notch animate-spin"></i>';
+
+                if(btn) { btn.disabled = true; btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> PROCESANDO...'; }
+                if(errMsg) errMsg.classList.add('hidden');
 
                 try {
                     if (this.isRegistering) {
@@ -677,868 +702,592 @@
                     }
                 } catch (error) {
                     console.error(error);
-                    this.showError("Error: Credenciales inválidas");
+                    this.showAuthError(this.mapAuthError(error.code));
+                    if(btn) { 
+                        btn.disabled = false; 
+                        btn.innerHTML = `<span>${this.isRegistering ? 'CREAR CUENTA' : 'INICIAR SESIÓN'}</span> <i class="ph-bold ph-arrow-right"></i>`; 
+                    }
+                }
+            },
+
+            async loginGoogle() {
+                try { await signInWithPopup(auth, new GoogleAuthProvider()); } 
+                catch (error) { console.error(error); this.showAuthError("Error con Google."); }
+            },
+
+            showAuthError(msg) {
+                setText('auth-error-txt', msg);
+                getElement('auth-error-msg')?.classList.remove('hidden');
+                const btn = getElement('btn-submit');
+                if(btn) {
                     btn.disabled = false;
-                    btn.innerHTML = '<span id="btn-text">REINTENTAR</span>';
+                    btn.innerHTML = `<span>${this.isRegistering ? 'CREAR CUENTA' : 'INICIAR SESIÓN'}</span> <i class="ph-bold ph-arrow-right"></i>`;
                 }
             },
-            showError(msg) {
-                document.getElementById('auth-error-txt').textContent = msg;
-                document.getElementById('auth-error-msg').classList.remove('hidden');
+            
+            mapAuthError(code) {
+                const errs = { 'auth/email-already-in-use': "ID registrado.", 'auth/invalid-email': "ID inválido.", 'auth/user-not-found': "Usuario no encontrado.", 'auth/wrong-password': "Contraseña incorrecta." };
+                return errs[code] || "Error: " + code.split('/')[1];
             },
-            logout() {
-                if(confirm('¿Cerrar sesión?')) signOut(auth);
-            }
-        };
 
-        // --- INIT ---
-        async function initAuth() {
-            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                try { await signInWithCustomToken(auth, __initial_auth_token); } catch (e) {}
-            }
-        }
-
-        onAuthStateChanged(auth, async (user) => {
-            const loginView = document.getElementById('login-view');
-            const mainApp = document.getElementById('main-container');
-            const bottomNav = document.getElementById('bottom-nav');
-            const fab = document.getElementById('fab-container');
-            const globalNav = document.getElementById('global-nav');
-            const loading = document.getElementById('loading-screen');
-
-            if (user) {
-                currentUser = user;
-                loginView.classList.add('hidden');
-                mainApp.classList.remove('hidden');
-                bottomNav.classList.remove('hidden');
-                fab.classList.remove('hidden');
-                globalNav.classList.remove('hidden');
-                
-                document.getElementById('user-display-name').textContent = user.displayName || 'Usuario';
-                document.getElementById('user-display-email').textContent = user.email;
-
-                loading.classList.add('opacity-0', 'pointer-events-none');
-                setTimeout(() => loading.classList.add('hidden'), 500);
-
-                setupListeners(user.uid);
-            } else {
-                currentUser = null;
-                mainApp.classList.add('hidden');
-                bottomNav.classList.add('hidden');
-                fab.classList.add('hidden');
-                globalNav.classList.add('hidden');
-                loginView.classList.remove('hidden');
-                loading.classList.add('hidden');
-            }
-        });
-
-        function setupListeners(userId) {
-            listeners.forEach(u => u()); listeners = [];
+            // --- CORE ---
+            updateRealClockUI() { setText('realClockTime', formatters.clock.format(new Date(this.getNow()))); }, // Mostrar hora sincronizada
             
-            listeners.push(onSnapshot(collection(db, 'artifacts', appId, 'users', userId, 'transactions'), (snap) => {
-                window.appData.transactions = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                // Wrap renders in try-catch to prevent one error stopping the others
-                try { renderDashboard(); } catch(e) { console.error("Dash error", e); }
-                try { renderHistory(); } catch(e) { console.error("Hist error", e); }
-                try { renderFixed(); } catch(e) { console.error("Fixed error", e); }
-            }));
-
-            listeners.push(onSnapshot(collection(db, 'artifacts', appId, 'users', userId, 'fixed'), (snap) => {
-                window.appData.fixed = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                try { renderFixed(); } catch(e) {}
-            }));
-
-            listeners.push(onSnapshot(doc(db, 'artifacts', appId, 'users', userId, 'settings', 'config'), (snap) => {
-                if(snap.exists()) window.appData.settings = { ...window.appData.settings, ...snap.data() };
-                try { setupSettingsUI(); renderDashboard(); } catch(e) {}
-            }));
-        }
-
-        // --- EXPORTED FUNCTIONS ---
-        
-        window.openAddModal = function(type, fixedId = null) {
-            editingTransactionId = null;
-            document.getElementById('modal-tx-title').textContent = type === 'expense' ? "Nuevo Gasto" : "Nuevo Ingreso";
-            document.getElementById('btn-save-tx').textContent = "GUARDAR";
-            document.getElementById('btn-delete-tx').classList.add('hidden');
-            document.getElementById('transaction-form').reset();
+            getNow() { 
+                // CRÍTICO: Usar el offset calculado para la "Verdadera Hora"
+                return Date.now() + (this.timeOffset || 0); 
+            },
             
-            // Set current datetime-local
-            const now = new Date();
-            // Subtract timezone offset to get local ISO string correctly for input value
-            const localIso = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
-            document.getElementById('t-date').value = localIso;
+            goOffline() { this.offline = true; this.loadLocal(); },
             
-            document.getElementById(type === 'expense' ? 'radio-expense' : 'radio-income').checked = true;
-            document.getElementById('t-fixed-id').value = fixedId || ''; // Set fixed ID if coming from fixed list
-            
-            renderCategoryChips(type);
-            
-            openModal('transaction-modal');
-        };
+            renderAuth(u) {
+                const isReal = u && !u.isAnonymous;
+                let t = u ? (u.isAnonymous ? "ANÓNIMO" : (u.displayName || "Usuario")) : "DESCONECTADO";
+                if (isReal && u.email && u.email.includes('@godsplan.site')) t = u.email.split('@')[0];
+            },
 
-        window.addTransaction = async function(e) {
-            e.preventDefault();
-            if (!currentUser) return;
+            loadLocal() { const d = localStorage.getItem('godsPlanData'); if (d) { try { this.data = JSON.parse(d); this.render(); this.uiClock(); } catch (e) { } } },
             
-            const type = document.querySelector('input[name="type"]:checked').value;
-            const amount = parseFloat(document.getElementById('t-amount').value);
-            const title = document.getElementById('t-title').value || (type === 'expense' ? 'Gasto' : 'Ingreso');
-            const category = document.getElementById('t-category').value || 'General';
-            const date = document.getElementById('t-date').value; // Now returns YYYY-MM-DDTHH:MM
-            const fixedPaymentId = document.getElementById('t-fixed-id').value;
+            async save() {
+                localStorage.setItem('godsPlanData', JSON.stringify(this.data));
+                if (!this.offline && this.userId) {
+                    // Al guardar, onSnapshot se disparará, pero eso está bien, asegura consistencia
+                    await setDoc(doc(db, "users", this.userId, "attendance", "sync_state"), this.data, { merge: true });
+                }
+            },
+            
+            syncData() { 
+                // Reiniciar el listener fuerza una actualización fresca
+                this.listenToChanges(); 
+                this.showSuccess("Sincronizando..."); 
+            },
+            
+            uiClock() {
+                const s = this.data.activeShift;
+                const area = getElement('actionButtons');
+                const off = getElement('offlineDisplay');
+                const on = getElement('timersDisplay');
+                const config = this.data.config || {}; 
+                const bl = config.bathAllow || 15;
+                const fl = config.foodAllow || 45;
 
-            const txData = { type, amount, title, category, date, createdAt: new Date().toISOString() };
-            if(fixedPaymentId) txData.fixedPaymentId = fixedPaymentId;
+                const btnBase = "btn-ctrl h-[55px] rounded-lg font-extrabold text-[0.85rem] cursor-pointer flex flex-col items-center justify-center gap-0.5 uppercase transition-all relative overflow-hidden active:scale-95";
+                const btnStart = `${btnBase} col-span-2 text-lg h-[70px] text-white bg-gradient-to-br from-blue-600 to-blue-800 hover:from-blue-500 hover:to-blue-700 border-none`;
+                const btnStop = `${btnBase} col-span-2 text-white bg-gradient-to-br from-red-600 to-red-800 hover:from-red-500 hover:to-red-700 border-none`;
+                const btnBath = `${btnBase} bg-card text-text-mute border-2 border-blue-500/40 hover:border-blue-500 hover:text-blue-500 hover:bg-blue-500/10`;
+                const btnFood = `${btnBase} bg-card text-text-mute border-2 border-amber-500/40 hover:border-amber-500 hover:text-amber-500 hover:bg-amber-500/10`;
+                const btnPause = `${btnBase} col-span-2 bg-card text-text-mute border-2 border-orange-600/40 hover:border-orange-500 hover:text-orange-500 hover:bg-orange-500/10`;
 
-            try {
-                if (editingTransactionId) {
-                    await updateDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'transactions', editingTransactionId), txData);
-                    showToast('Actualizado');
+                const startEl = getElement('shiftStartTime');
+                const bathEl = getElement('clockBathContainer');
+                const foodEl = getElement('clockFoodContainer');
+                const cs = getElement('clockStatus');
+
+                if (!s) {
+                    if(off) off.style.display = 'block'; 
+                    if(on) on.style.display = 'none';
+                    if(area) area.innerHTML = `<button class="${btnStart}" onclick="window.app.clockIn()"><i class="ph-bold ph-play"></i> INICIAR JORNADA</button>`;
+                    if (this.timer) clearInterval(this.timer);
+                    setText('clockStatus', "FUERA DE TURNO");
+                    if(cs) { cs.classList.remove('animate-pulse-custom', 'text-warn'); }
+                    if(startEl) startEl.style.display = 'none';
                 } else {
-                    await addDoc(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'transactions'), txData);
-                    showToast('Guardado');
+                    if (!s.breaks) { s.breaks = { bathroom: 0, food: 0, pause: 0 }; this.save(); }
+                    if (s.breaks.pause === undefined) s.breaks.pause = 0;
+
+                    if(off) off.style.display = 'none'; 
+                    if(on) on.style.display = 'grid';
+                    setText('limBath', bl);
+                    setText('limFood', fl);
+                    
+                    if(startEl && s.start) {
+                        // FIX: Validar s.start
+                        const safeStart = Number(s.start) ? new Date(s.start) : new Date();
+                        // MODIFICADO: Ahora muestra el icono y usa innerHTML para permitir edición
+                        startEl.innerHTML = `ENTRADA: ${formatters.shortTime.format(safeStart)} <i class="ph-bold ph-pencil-simple text-brand text-[1.1em] ml-1"></i>`;
+                        startEl.style.display = 'flex';
+                    }
+
+                    if(area) {
+                        area.innerHTML = `
+                            <button class="${btnBath} ${s.breakType === 'bathroom' ? 'active-bath' : ''}" onclick="window.app.toggleBreak('bathroom')"><i class="ph-bold ph-toilet"></i> BAÑO</button>
+                            <button class="${btnFood} ${s.breakType === 'food' ? 'active-food' : ''}" onclick="window.app.toggleBreak('food')"><i class="ph-bold ph-hamburger"></i> COMIDA</button>
+                            <button class="${btnPause} ${s.breakType === 'pause' ? 'active-pause' : ''}" onclick="window.app.toggleBreak('pause')"><i class="ph-bold ph-pause-circle"></i> ${s.breakType === 'pause' ? 'REANUDAR' : 'PAUSAR / DESCONEXIÓN'}</button>
+                            <button class="${btnStop}" onclick="window.app.confirmClockOut()"><i class="ph-bold ph-stop"></i> TERMINAR JORNADA</button>
+                        `;
+                    }
+
+                    if (this.timer) clearInterval(this.timer);
+                    
+                    // Función optimizada de intervalo (usa caché de elementos)
+                    this.timer = setInterval(() => {
+                        const now = this.getNow();
+                        // SAFEGUARDS: Forzar conversión a número para evitar NaN
+                        const safeStart = Number(s.start) || now; 
+                        let totalPauseAccumulated = (Number(s.breaks?.pause) || 0) * 60000;
+                        let currentPauseDuration = 0;
+                        
+                        if (s.breakType === 'pause') {
+                            setText('clockStatus', "PAUSADO");
+                            if(cs) cs.classList.add('animate-pulse-custom', 'text-warn');
+                            currentPauseDuration = now - (Number(s.breakStart) || now);
+                        } else {
+                            setText('clockStatus', "TURNO ACTIVO");
+                            if(cs) cs.classList.remove('animate-pulse-custom', 'text-warn');
+                        }
+
+                        let displayTime = (now - safeStart) - totalPauseAccumulated - currentPauseDuration;
+                        // ULTIMATE SAFETY: Si da NaN o negativo por error de reloj, forzar 0
+                        if (isNaN(displayTime) || displayTime < 0) displayTime = 0;
+                        
+                        setText('clockDisplay', this.msToTime(displayTime));
+
+                        let b = Number(s.breaks?.bathroom) || 0;
+                        let f = Number(s.breaks?.food) || 0;
+
+                        if (s.breakStart) {
+                            const d = (now - (Number(s.breakStart) || now)) / 60000;
+                            if (s.breakType === 'bathroom') b += d; else if (s.breakType === 'food') f += d;
+                        }
+                        
+                        setText('dispBath', this.fmtBreak(b));
+                        if(bathEl) {
+                            s.breakType === 'bathroom' ? bathEl.classList.add('active') : bathEl.classList.remove('active');
+                            b > bl ? bathEl.classList.add('danger') : bathEl.classList.remove('danger');
+                        }
+                        const bathRem = bl - b;
+                        const elRemBath = getElement('remBath');
+                        if (elRemBath) {
+                            elRemBath.textContent = bathRem >= 0 ? `Restan: ${this.fmtBreak(bathRem)}` : `Exceso: ${this.fmtBreak(Math.abs(bathRem))}`;
+                            elRemBath.className = bathRem >= 0 ? 'text-[0.7rem] font-extrabold mt-1 text-money' : 'text-[0.7rem] font-extrabold mt-1 text-alert';
+                        }
+
+                        setText('dispFood', this.fmtBreak(f));
+                        if(foodEl) {
+                            s.breakType === 'food' ? foodEl.classList.add('active') : foodEl.classList.remove('active');
+                            f > fl ? foodEl.classList.add('danger') : foodEl.classList.remove('danger');
+                        }
+                        const foodRem = fl - f;
+                        const elRemFood = getElement('remFood');
+                        if (elRemFood) {
+                            elRemFood.textContent = foodRem >= 0 ? `Restan: ${this.fmtBreak(foodRem)}` : `Exceso: ${this.fmtBreak(Math.abs(foodRem))}`;
+                            elRemFood.className = foodRem >= 0 ? 'text-[0.7rem] font-extrabold mt-1 text-money' : 'text-[0.7rem] font-extrabold mt-1 text-alert';
+                        }
+                    }, 1000);
                 }
-                closeModal('transaction-modal');
-            } catch(e) { console.error(e); }
-        };
-
-        window.deleteTransaction = async function(id) {
-            // Stop propagation handled in HTML onclick for list items
-            if(confirm('¿Eliminar este movimiento?')) {
-                await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'transactions', id));
-                showToast('Eliminado');
-            }
-        };
-        
-        window.deleteCurrentTransaction = async function() {
-            if(!editingTransactionId) return;
-            if(confirm('¿Eliminar este movimiento permanentemente?')) {
-                await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'transactions', editingTransactionId));
-                showToast('Eliminado');
-                closeModal('transaction-modal');
-            }
-        }
-
-        window.editTransaction = function(id) {
-            const tx = window.appData.transactions.find(t => t.id === id);
-            if(!tx) return;
-            editingTransactionId = id;
-            document.getElementById('modal-tx-title').textContent = "Editar Movimiento";
-            document.getElementById('btn-save-tx').textContent = "ACTUALIZAR";
-            document.getElementById('btn-delete-tx').classList.remove('hidden'); // Show delete button in modal
+            },
             
-            document.getElementById('t-amount').value = tx.amount;
-            document.getElementById('t-title').value = tx.title;
-            
-            // Handle legacy date format (YYYY-MM-DD) vs new (YYYY-MM-DDTHH:MM)
-            let dateVal = tx.date;
-            if (dateVal && dateVal.length === 10) {
-                dateVal += "T12:00"; // Default time for legacy data
-            }
-            document.getElementById('t-date').value = dateVal;
-            
-            document.getElementById(tx.type === 'expense' ? 'radio-expense' : 'radio-income').checked = true;
-            document.getElementById('t-fixed-id').value = tx.fixedPaymentId || '';
-            
-            renderCategoryChips(tx.type);
-            selectChip(tx.category);
-            openModal('transaction-modal');
-        };
+            // --- TIME & CALCULATIONS ---
+            fmt(m) { const r = Math.round(m); const a = Math.abs(r); return `${r < 0 ? '-' : ''}${Math.floor(a / 60)}:${(a % 60).toString().padStart(2, '0')}`; },
+            fmtBreak(m) { 
+                if(!Number.isFinite(m)) return "00:00";
+                return `${Math.floor(m).toString().padStart(2, '0')}:${Math.floor((m % 1) * 60).toString().padStart(2, '0')}`; 
+            },
+            msToTime(ms) { 
+                // CRITICAL FIX: Retornar 0 si es NaN para evitar NaN:NaN:NaN
+                if (!Number.isFinite(ms)) return "0:00:00";
+                const s = Math.floor(ms / 1000), m = Math.floor(s / 60), h = Math.floor(m / 60); 
+                return `${h}:${(m % 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`; 
+            },
+            getWeek(d) { d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7)); var y = new Date(Date.UTC(d.getUTCFullYear(), 0, 1)); return Math.ceil((((d - y) / 86400000) + 1) / 7); },
+            calcHours(i, o) { if (!i || !o) return 0; const [h1, m1] = i.split(':'), [h2, m2] = o.split(':'); const d = ((h2 * 60 + +m2) - (h1 * 60 + +m1)); return d < 0 ? -1 : d; },
+            calcStats(logs) { let t = 0, w = 0, f = 0; logs.forEach(l => { t += (l.type === 'Laboral' || l.type === 'Falta') ? 480 : 0; w += (l.type === 'Laboral' || l.type === 'Descanso') ? (l.hours - (l.disconnection || 0)) : 0; if (l.type === 'Falta') f++; }); return { target: t, worked: w, bal: w - t, fails: f }; },
 
-        // --- FIXED ---
-        window.addFixed = async function(e) {
-            e.preventDefault();
-            const title = document.getElementById('f-title').value;
-            const amount = parseFloat(document.getElementById('f-amount').value);
-            const day = document.getElementById('f-day').value;
-            await addDoc(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'fixed'), { title, amount, day });
-            closeModal('fixed-modal');
-            showToast('Pago Fijo Guardado');
-        };
-
-        window.payFixed = function(id) {
-            const f = window.appData.fixed.find(x => x.id === id);
-            window.openAddModal('expense', id); // Pass ID to link transaction
-            document.getElementById('t-amount').value = f.amount;
-            document.getElementById('t-title').value = f.title;
-            selectChip('Servicios');
-        };
-
-        window.deleteFixed = async function(id) {
-            if(confirm('¿Borrar?')) await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'fixed', id));
-        };
-
-        // --- SETTINGS ---
-        window.saveSettings = async function() {
-            const freq = document.querySelector('input[name="pay-freq"]:checked').value;
-            const payday = document.getElementById('payday-select').value;
-            const payday1 = document.getElementById('payday-1-select').value;
-            const payday2 = document.getElementById('payday-2-select').value;
-            const forcedSavings = document.getElementById('toggle-forced-savings').checked;
-            
-            await setDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'settings', 'config'), { 
-                frequency: freq, 
-                payday, 
-                payday1, 
-                payday2,
-                forcedSavings
-            }, { merge: true });
-            showToast('Configuración Guardada');
-        };
-
-        window.resetApp = async function() {
-            if(confirm('¿BORRAR TODO?')) {
-                const txs = window.appData.transactions;
-                const fxs = window.appData.fixed;
-                txs.forEach(t => deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'transactions', t.id)));
-                fxs.forEach(f => deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'fixed', f.id)));
-                showToast('Limpieza Completada');
-            }
-        };
-        
-        // --- ADJUSTMENT ---
-        window.openAdjustModal = function() {
-            // Integer math for precise sum
-            let balCents = 0;
-            window.appData.transactions.forEach(t => {
-                const amountCents = Math.round(t.amount * 100);
-                if (t.type === 'income') balCents += amountCents;
-                else balCents -= amountCents;
-            });
-            const bal = balCents / 100;
-
-            document.getElementById('adjust-current-display').textContent = formatCurrency(bal);
-            document.getElementById('adjust-current-display').dataset.raw = bal;
-            document.getElementById('adjust-amount').value = '';
-            openModal('adjust-modal');
-        }
-
-        window.submitAdjustment = async function(e) {
-            e.preventDefault();
-            const real = parseFloat(document.getElementById('adjust-amount').value);
-            const sys = parseFloat(document.getElementById('adjust-current-display').dataset.raw);
-            
-            // Integer Math to find difference
-            // Example: 10.01 - 10.00 = 0.009999 (Floating Point Error)
-            // Fix: (1001 - 1000) / 100 = 0.01 (Correct)
-            const diff = (Math.round(real * 100) - Math.round(sys * 100)) / 100;
-            
-            if(Math.abs(diff) < 0.01) return closeModal('adjust-modal');
-            
-            await addDoc(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'transactions'), {
-                type: diff > 0 ? 'income' : 'expense',
-                amount: Math.abs(diff),
-                title: 'Ajuste de Saldo',
-                category: 'Ajuste',
-                date: new Date().toISOString().split('T')[0],
-                createdAt: new Date().toISOString()
-            });
-            closeModal('adjust-modal');
-            showToast('Saldo Ajustado');
-        }
-
-        // --- JSON IMPORT/EXPORT ---
-        window.exportData = function() {
-            const data = { transactions: window.appData.transactions, fixed: window.appData.fixed, settings: window.appData.settings };
-            const blob = new Blob([JSON.stringify(data)], {type: "application/json"});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = "backup_godsplan.json"; a.click();
-        }
-
-        window.importData = function(input) {
-            const file = input.files[0];
-            if(!file) return;
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                const json = JSON.parse(e.target.result);
-                if(json.transactions) json.transactions.forEach(t => addDoc(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'transactions'), t));
-                if(json.fixed) json.fixed.forEach(f => addDoc(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'fixed'), f));
-                showToast('Datos Importados');
-            };
-            reader.readAsText(file);
-        }
-
-        initAuth();
-    </script>
-
-    <!-- UI Logic Script -->
-    <script>
-        let currentViewDate = new Date();
-        let balanceMode = 'month';
-        let chartInstance = null;
-        
-        // --- CONSTANTS ---
-        const COMMON_HOLIDAYS = ['01-01', '02-05', '03-21', '05-01', '09-16', '11-20', '12-25'];
-
-        const CATEGORIES = {
-            expense: [
-                { id: 'Comida', icon: 'ph-hamburger', color: 'text-orange-400' },
-                { id: 'Transporte', icon: 'ph-car', color: 'text-blue-400' },
-                { id: 'Hogar', icon: 'ph-house', color: 'text-purple-400' },
-                { id: 'Ocio', icon: 'ph-film-strip', color: 'text-pink-400' },
-                { id: 'Salud', icon: 'ph-heartbeat', color: 'text-red-400' },
-                { id: 'Servicios', icon: 'ph-lightning', color: 'text-yellow-400' },
-                { id: 'Otros', icon: 'ph-dots-three-circle', color: 'text-gray-400' }
-            ],
-            income: [
-                { id: 'Nómina', icon: 'ph-money', color: 'text-emerald-400' },
-                { id: 'Venta', icon: 'ph-tag', color: 'text-blue-400' },
-                { id: 'Regalo', icon: 'ph-gift', color: 'text-pink-400' },
-                { id: 'Otro', icon: 'ph-dots-three-circle', color: 'text-gray-400' }
-            ]
-        };
-
-        // --- HELPERS ---
-        const formatCurrency = (amount) => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(amount);
-        
-        function updateDateHeader() {
-            const str = currentViewDate.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
-            document.getElementById('current-date-header').textContent = str.charAt(0).toUpperCase() + str.slice(1);
-        }
-
-        function changeMonth(dir) {
-            currentViewDate.setMonth(currentViewDate.getMonth() + dir);
-            updateDateHeader();
-            renderDashboard();
-        }
-        function goToCurrentMonth() {
-            currentViewDate = new Date();
-            updateDateHeader();
-            renderDashboard();
-        }
-        function toggleBalanceMode() {
-            balanceMode = balanceMode === 'month' ? 'total' : 'month';
-            document.getElementById('balance-period-label').textContent = balanceMode === 'month' ? 'MENSUAL' : 'TOTAL';
-            renderDashboard();
-        }
-
-        // New Helper: Check if fixed payment is paid in current month
-        function isFixedPaidThisMonth(fixedId) {
-            const now = new Date();
-            const m = now.getMonth();
-            const y = now.getFullYear();
-            return window.appData.transactions.some(t => {
-                // Parse date carefully, assuming t.date is YYYY-MM-DD or YYYY-MM-DDTHH:MM
-                if (!t.date) return false;
+            // --- ACTIONS ---
+            openTimerEdit(type) {
+                if (!this.data.activeShift) return;
+                this.editingTimerType = type;
+                // Safe access
+                let currentTotal = Number(this.data.activeShift.breaks?.[type]) || 0;
                 
-                // Safe Date parsing
-                const d = new Date(t.date);
-                if (isNaN(d.getTime())) return false; // Invalid date check
-                
-                return t.fixedPaymentId === fixedId && d.getMonth() === m && d.getFullYear() === y;
-            });
-        }
-
-        // --- RENDERING ---
-        function renderDashboard() {
-            if (!window.appData || !window.appData.transactions) return;
-            
-            // Filter Logic
-            const m = currentViewDate.getMonth();
-            const y = currentViewDate.getFullYear();
-            
-            const monthlyTx = window.appData.transactions.filter(t => {
-                if (!t.date) return false;
-                // Robust parsing for filter
-                const d = new Date(t.date);
-                if(isNaN(d.getTime())) return false;
-                
-                return d.getMonth() === m && d.getFullYear() === y;
-            });
-
-            // Calcs (Month) - Using Integer Math
-            let incMCents = 0, expMCents = 0;
-            monthlyTx.forEach(t => {
-                const val = Math.round(t.amount * 100);
-                if (t.type === 'income') incMCents += val;
-                else expMCents += val;
-            });
-            const incM = incMCents / 100;
-            const expM = expMCents / 100;
-            
-            // Calcs (Total) - Using Integer Math
-            let incTCents = 0, expTCents = 0;
-            window.appData.transactions.forEach(t => {
-                 const val = Math.round(t.amount * 100);
-                 if (t.type === 'income') incTCents += val;
-                 else expTCents += val;
-            });
-            const incT = incTCents / 100;
-            const expT = expTCents / 100;
-            
-            const totalBalanceReal = (incTCents - expTCents) / 100;
-
-            // Display Values (Based on Mode)
-            const showInc = balanceMode === 'month' ? incM : incT;
-            const showExp = balanceMode === 'month' ? expM : expT;
-            let bal = showInc - showExp;
-
-            // FORCED SAVINGS LOGIC (VISUAL REDUCTION)
-            if (window.appData.settings.forcedSavings) {
-                bal = bal * 0.90; // Reduce by 10%
-            }
-
-            document.getElementById('total-balance').textContent = formatCurrency(bal);
-            document.getElementById('total-income').textContent = formatCurrency(showInc);
-            document.getElementById('total-expense').textContent = formatCurrency(showExp);
-
-            // Progress Bar
-            const percent = showInc > 0 ? Math.min((showExp / showInc) * 100, 100) : (showExp > 0 ? 100 : 0);
-            document.getElementById('balance-progress').style.width = `${percent}%`;
-            document.getElementById('progress-percent').textContent = `${Math.round(percent)}%`;
-
-            // List - Optimized DOM Rendering (No innerHTML += in loop)
-            const listEl = document.getElementById('recent-list');
-            const displayTx = balanceMode === 'month' ? monthlyTx : [...window.appData.transactions];
-            
-            // SORT BY FULL DATE OBJECT (Includes time)
-            displayTx.sort((a,b) => new Date(b.date) - new Date(a.date));
-            
-            if(displayTx.length === 0) {
-                listEl.innerHTML = '<div class="text-center text-zinc-600 text-xs py-8">Sin movimientos</div>';
-            } else {
-                const listHTML = displayTx.slice(0, 5).map(t => createTxHTML(t)).join('');
-                listEl.innerHTML = listHTML;
-            }
-            
-            // Formula & Payday - Pass the modified balance if Forced Savings is on
-            // This ensures the daily budget also reflects the scarcity
-            updatePaydayInfo(bal);
-            updateChart(displayTx);
-        }
-
-        function createTxHTML(t) {
-            const isInc = t.type === 'income';
-            // Find icon
-            const catObj = [...CATEGORIES.expense, ...CATEGORIES.income].find(c => c.id === t.category);
-            const icon = catObj ? catObj.icon : 'ph-circle';
-            const iconColor = catObj ? catObj.color : 'text-zinc-400';
-            
-            // Format Date Subtitle
-            const d = new Date(t.date);
-            let timeStr = '';
-            // Only show time if valid date object and not just YYYY-MM-DD
-            if (!isNaN(d.getTime())) {
-                timeStr = t.date.includes('T') 
-                    ? d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) 
-                    : '';
-            }
-
-            return `
-            <div class="flex justify-between items-center p-3 rounded-2xl bg-zinc-900/30 hover:bg-zinc-800 transition-colors border border-white/5 group relative">
-                <div class="flex items-center gap-3 overflow-hidden flex-1 cursor-pointer" onclick="editTransaction('${t.id}')">
-                    <div class="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                        <i class="ph-fill ${icon} ${iconColor} text-lg"></i>
-                    </div>
-                    <div class="min-w-0">
-                        <h4 class="font-bold text-zinc-300 text-xs truncate">${t.title}</h4>
-                        <p class="text-[10px] text-zinc-600 uppercase font-bold">
-                            ${t.category} ${timeStr ? '• ' + timeStr : ''}
-                        </p>
-                    </div>
-                </div>
-                
-                <div class="flex flex-col items-end gap-1">
-                    <span class="font-bold text-sm ${isInc ? 'text-emerald-500' : 'text-zinc-200'} whitespace-nowrap">
-                        ${isInc ? '+' : '-'}${formatCurrency(t.amount)}
-                    </span>
-                    <button onclick="event.stopPropagation(); deleteTransaction('${t.id}')" class="text-zinc-600 hover:text-red-500 p-1 rounded-md hover:bg-red-500/10 transition z-10" title="Eliminar">
-                        <i class="ph-bold ph-trash"></i>
-                    </button>
-                </div>
-            </div>
-            `;
-        }
-
-        function renderHistory() {
-            // FIX: Safely get filter, default to 'all' if element not found yet
-            const activeBtn = document.querySelector('.filter-btn.active');
-            const filter = activeBtn ? activeBtn.dataset.filter : 'all';
-            
-            const list = document.getElementById('full-history-list');
-            list.innerHTML = '';
-            
-            // Sort by full date time
-            let txs = [...window.appData.transactions].sort((a,b) => new Date(b.date) - new Date(a.date));
-            if(filter !== 'all') txs = txs.filter(t => t.type === filter);
-            
-            if(txs.length === 0) {
-                list.innerHTML = '<div class="text-center text-zinc-600 py-10">Nada por aquí</div>';
-                return;
-            }
-
-            // GROUPING LOGIC (BY DAY)
-            const grouped = {};
-            txs.forEach(t => {
-                if(!t.date) return;
-                // Robust key generation (take first 10 chars YYYY-MM-DD)
-                const dateKey = t.date.substring(0, 10);
-                if(!grouped[dateKey]) grouped[dateKey] = [];
-                grouped[dateKey].push(t);
-            });
-
-            // RENDER GROUPS
-            Object.keys(grouped).sort((a,b) => new Date(b) - new Date(a)).forEach(date => {
-                const groupDiv = document.createElement('div');
-                // Force time to midnight to avoid timezone shift on just the date part
-                const dateObj = new Date(date + 'T00:00:00');
-                
-                const today = new Date(); today.setHours(0,0,0,0);
-                const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1); yesterday.setHours(0,0,0,0);
-                
-                let label = dateObj.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
-                if(dateObj.getTime() === today.getTime()) label = "Hoy";
-                else if(dateObj.getTime() === yesterday.getTime()) label = "Ayer";
-
-                // Optimized DOM Rendering (No innerHTML += in loop)
-                const txItemsHTML = grouped[date].map(t => createTxHTML(t)).join('');
-                
-                groupDiv.innerHTML = `
-                    <h3 class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mt-6 mb-2 pl-2">${label}</h3>
-                    <div class="space-y-2">
-                        ${txItemsHTML}
-                    </div>
-                `;
-                list.appendChild(groupDiv);
-            });
-        }
-
-        function renderFixed() {
-            const list = document.getElementById('fixed-list');
-            
-            if(window.appData.fixed.length === 0) {
-                list.innerHTML = '<div class="text-center text-zinc-600 py-10 col-span-full">Sin pagos fijos</div>';
-                return;
-            }
-
-            // Optimized DOM Rendering (No innerHTML += in loop)
-            const fixedHTML = window.appData.fixed.map(f => {
-                const isPaid = isFixedPaidThisMonth(f.id);
-                
-                // Styles based on status
-                const containerClass = isPaid 
-                    ? "bg-emerald-900/10 border border-emerald-500/50 p-4 rounded-2xl flex justify-between items-center transition-all"
-                    : "bg-zinc-900/50 border border-zinc-800 p-4 rounded-2xl flex justify-between items-center transition-all";
-                
-                const textClass = isPaid ? "text-emerald-400" : "text-zinc-200";
-                
-                const actionBtn = isPaid 
-                    ? `<div class="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-500/50 flex items-center justify-center text-emerald-500 cursor-default"><i class="ph-bold ph-check"></i></div>`
-                    : `<button onclick="payFixed('${f.id}')" class="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-emerald-500 hover:bg-emerald-500 hover:text-white transition shadow-lg"><i class="ph-bold ph-check"></i></button>`;
-
-                return `
-                <div class="${containerClass}">
-                    <div>
-                        <p class="font-bold ${textClass} text-sm">${f.title}</p>
-                        <p class="text-[10px] text-zinc-500 font-bold uppercase">Día ${f.day} • ${formatCurrency(f.amount)}</p>
-                    </div>
-                    <div class="flex gap-2">
-                        ${actionBtn}
-                        <button onclick="deleteFixed('${f.id}')" class="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-white transition"><i class="ph-bold ph-trash"></i></button>
-                    </div>
-                </div>
-                `;
-            }).join('');
-
-            list.innerHTML = fixedHTML;
-        }
-
-        // --- FORMULA & PAYDAY (LOGIC UPDATE: MONTH END FIX + HOLIDAYS + PENDING FIXED) ---
-        function updatePaydayInfo(totalBalance) {
-            const set = window.appData.settings;
-            const badge = document.getElementById('payday-badge');
-            
-            if(!set || (set.frequency === 'monthly' && !set.payday)) {
-                badge.textContent = "Sin Config";
-                badge.className = "text-[10px] bg-zinc-800 text-zinc-500 border border-zinc-700 px-3 py-1.5 rounded-full font-mono font-bold";
-                document.getElementById('formula-days-left').textContent = "Configura tu cobro";
-                document.getElementById('formula-daily').textContent = "$0.00";
-                return;
-            }
-            
-            const nextDate = getNextPayday();
-            if (!nextDate) return;
-
-            const today = new Date(); today.setHours(0,0,0,0);
-            const diff = Math.ceil((nextDate - today) / (1000 * 60 * 60 * 24));
-            
-            // Badge Update
-            badge.textContent = diff <= 0 ? "¡Hoy Cobras!" : `${diff} Días Restantes`;
-            badge.className = diff <= 3 
-                ? "text-[10px] bg-red-500/10 text-red-400 border border-red-500/20 px-3 py-1.5 rounded-full font-mono font-bold whitespace-nowrap shadow-[0_0_10px_rgba(239,68,68,0.1)]"
-                : "text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1.5 rounded-full font-mono font-bold whitespace-nowrap shadow-[0_0_10px_rgba(16,185,129,0.1)]";
-
-            // Formula Calculation
-            updateDailyFormula(totalBalance, diff, nextDate);
-        }
-
-        function getNextPayday() {
-            const today = new Date(); today.setHours(0,0,0,0);
-            let candidates = [];
-            const currentYear = today.getFullYear();
-            const currentMonth = today.getMonth();
-            const s = window.appData.settings;
-            
-            // Logic to handle month overflow (Day 0 of next month = Last day of current month)
-            const getSafeDate = (year, month, day) => {
-                const lastDayOfMonth = new Date(year, month + 1, 0).getDate();
-                const safeDay = Math.min(day, lastDayOfMonth);
-                return new Date(year, month, safeDay);
-            };
-
-            if (s.frequency === 'biweekly') {
-                for(let m = 0; m <= 1; m++) {
-                    let monthIndex = currentMonth + m; let year = currentYear;
-                    if(monthIndex > 11) { monthIndex = 0; year++; }
-                    candidates.push(getSafeDate(year, monthIndex, 15));
-                    candidates.push(getSafeDate(year, monthIndex, 30)); // 30 will auto-adjust for Feb
+                if (this.data.activeShift.breakStart && this.data.activeShift.breakType === type) {
+                    currentTotal += (this.getNow() - (Number(this.data.activeShift.breakStart) || this.getNow())) / 60000;
                 }
-            } else if (s.frequency === 'biweekly-custom' && s.payday1 && s.payday2) {
-                const p1 = parseInt(s.payday1); const p2 = parseInt(s.payday2);
-                for(let m = 0; m <= 1; m++) {
-                    let monthIndex = currentMonth + m; let year = currentYear;
-                    if(monthIndex > 11) { monthIndex = 0; year++; }
-                    candidates.push(getSafeDate(year, monthIndex, p1));
-                    candidates.push(getSafeDate(year, monthIndex, p2));
-                }
-            } else if (s.frequency === 'monthly' && s.payday) {
-                const day = parseInt(s.payday);
-                for(let m = 0; m <= 1; m++) {
-                    let monthIndex = currentMonth + m; let year = currentYear;
-                    if(monthIndex > 11) { monthIndex = 0; year++; }
-                    candidates.push(getSafeDate(year, monthIndex, day));
-                }
-            }
-            
-            // Apply Holiday/Weekend Shift Logic to ALL candidates first
-            let adjustedCandidates = candidates.map(d => getNextBusinessDay(d));
-            adjustedCandidates.sort((a,b) => a - b);
-            
-            // Find first date that is >= Today
-            for (let d of adjustedCandidates) {
-                d.setHours(0,0,0,0);
-                if (d >= today) return d;
-            }
-            return adjustedCandidates[0]; // Fallback
-        }
-
-        function getNextBusinessDay(date) {
-            let d = new Date(date);
-            // Helper to format MM-DD for comparison
-            const fmt = (x) => `${(x.getMonth()+1).toString().padStart(2,'0')}-${x.getDate().toString().padStart(2,'0')}`;
-
-            // Check if Sat(6), Sun(0) or Holiday
-            while (d.getDay() === 0 || d.getDay() === 6 || COMMON_HOLIDAYS.includes(fmt(d))) {
-                d.setDate(d.getDate() + 1);
-            }
-            return d;
-        }
-
-        function updateDailyFormula(totalBalance, daysLeft, nextPaydayDate) {
-            if(daysLeft <= 0) {
-                // It's payday!
-                document.getElementById('formula-days-left').textContent = "¡Hoy Cobras!";
-                document.getElementById('formula-days-left').className = "text-[10px] text-emerald-400 font-bold uppercase tracking-wider mb-0.5";
-                document.getElementById('formula-daily').textContent = formatCurrency(totalBalance);
-                return;
-            }
-
-            // Logic: Calculate Sum of Fixed Payments due strictly in the remaining period
-            let pendingFixedSum = 0;
-            const today = new Date(); today.setHours(0,0,0,0);
-            
-            // Loop through each day from Tomorrow until Payday
-            // We check if any fixed payment falls on these days
-            for(let i=1; i <= daysLeft; i++) {
-                let checkDate = new Date(today);
-                checkDate.setDate(today.getDate() + i);
-                const dayNum = checkDate.getDate();
+                setText('timerEditTitle', type === 'bathroom' ? 'Baño' : 'Comida');
                 
-                // Find fixed payments that match this day number
-                window.appData.fixed.forEach(f => {
-                    if(parseInt(f.day) === dayNum) {
-                        // Check if this specific Fixed Payment has been paid this month
-                        if (!isFixedPaidThisMonth(f.id)) {
-                             // Integer math for accumulation
-                             pendingFixedSum = (Math.round(pendingFixedSum * 100) + Math.round(parseFloat(f.amount) * 100)) / 100;
+                // Reset to duration mode
+                setText('timerEditDesc', `Ingresa el tiempo acumulado para ${type === 'bathroom' ? 'Baño' : 'Comida'}.`);
+                const inp = getElement('inpTimerEdit');
+                if(inp) {
+                    inp.type = 'text'; // Mode Duration
+                    const m = Math.floor(currentTotal);
+                    const s = Math.floor((currentTotal % 1) * 60);
+                    inp.value = `${m}:${s.toString().padStart(2, '0')}`;
+                }
+                 
+                this.toggleModal('timerEditModal', true);
+                if(inp) setTimeout(() => inp.focus(), 100);
+            },
+            
+            // NUEVO: Función para abrir modal de hora de entrada
+            openStartTimeEdit() {
+                if (!this.data.activeShift) return;
+                this.editingTimerType = 'start';
+                
+                const start = new Date(this.data.activeShift.start);
+                const h = start.getHours().toString().padStart(2, '0');
+                const m = start.getMinutes().toString().padStart(2, '0');
+                
+                setText('timerEditTitle', 'Hora de Entrada');
+                setText('timerEditDesc', 'Ajusta la hora de inicio de jornada.');
+
+                const inp = getElement('inpTimerEdit');
+                if(inp) {
+                    inp.type = 'time'; // Change to time picker
+                    inp.value = `${h}:${m}`;
+                }
+                this.toggleModal('timerEditModal', true);
+            },
+
+            saveTimerEdit() {
+                if (!this.editingTimerType || !this.data.activeShift) return;
+                
+                // NUEVO: Lógica específica para editar hora de inicio
+                if (this.editingTimerType === 'start') {
+                    const inp = getElement('inpTimerEdit');
+                    if (!inp || !inp.value) return;
+                    const [h, m] = inp.value.split(':').map(Number);
+                    
+                    // Modificamos solo la hora del inicio actual, mantenemos la fecha
+                    const newStart = new Date(this.data.activeShift.start);
+                    newStart.setHours(h, m, 0, 0);
+                    
+                    this.data.activeShift.start = newStart.getTime();
+                    this.save();
+                    this.uiClock();
+                    this.toggleModal('timerEditModal', false);
+                    return;
+                }
+                
+                // Lógica existente para descansos
+                const inp = getElement('inpTimerEdit');
+                const valStr = inp ? inp.value.trim() : '0';
+                let newVal = 0;
+                if (valStr.includes(':')) {
+                    const parts = valStr.split(':');
+                    newVal = (parseInt(parts[0]) || 0) + ((parseInt(parts[1]) || 0) / 60);
+                } else newVal = parseFloat(valStr);
+                
+                if (isNaN(newVal) || newVal < 0) return this.showMessage("Tiempo inválido");
+                
+                if (!this.data.activeShift.breaks) this.data.activeShift.breaks = {};
+                this.data.activeShift.breaks[this.editingTimerType] = newVal;
+                
+                if (this.data.activeShift.breakStart && this.data.activeShift.breakType === this.editingTimerType) {
+                    this.data.activeShift.breakStart = this.getNow();
+                }
+                this.save(); this.uiClock(); this.toggleModal('timerEditModal', false);
+            },
+
+            clockIn() {
+                if (this.processing) return; this.processing = true;
+                this.stopBreak();
+                this.data.activeShift = { start: this.getNow(), breaks: { bathroom: 0, food: 0, pause: 0 }, breakStart: null, breakType: null };
+                this.save(); this.uiClock(); this.processing = false;
+            },
+            toggleBreak(type) {
+                const s = this.data.activeShift; if (!s) return;
+                if (s.breakStart) {
+                    const prev = s.breakType;
+                    this.stopBreak();
+                    if (prev !== type) setTimeout(() => this.startBreak(type), 50);
+                } else this.startBreak(type);
+            },
+            startBreak(t) { this.data.activeShift.breakStart = this.getNow(); this.data.activeShift.breakType = t; this.save(); this.uiClock(); },
+            stopBreak() {
+                const s = this.data.activeShift;
+                if (s && s.breakStart) {
+                    if (s.breakType) {
+                        if (s.breaks[s.breakType] === undefined) s.breaks[s.breakType] = 0;
+                        s.breaks[s.breakType] += (this.getNow() - (Number(s.breakStart) || this.getNow())) / 60000;
+                    }
+                    s.breakStart = null; s.breakType = null;
+                    this.save(); this.uiClock();
+                }
+            },
+            confirmClockOut() { if (this.data.activeShift.breakStart) this.stopBreak(); if (this.data.activeShift) this.toggleModal('clockOutModal', true); },
+            finishShiftReal() {
+                const s = this.data.activeShift; if (!s) return;
+                if (s.breakStart) this.stopBreak(); 
+                if (!s.breaks) s.breaks = { bathroom: 0, food: 0, pause: 0 };
+                
+                const end = this.getNow();
+                const totalWallTime = (end - (Number(s.start) || end)) / 60000;
+                const pauseTime = Number(s.breaks.pause) || 0;
+                const gross = totalWallTime - pauseTime;
+                
+                const b = Number(s.breaks.bathroom) || 0, f = Number(s.breaks.food) || 0;
+                const config = this.data.config || {}; 
+                const disc = Math.max(0, b - (config.bathAllow || 15)) + Math.max(0, f - (config.foodAllow || 45));
+                
+                // Usar formateadores cacheados
+                const safeStart = Number(s.start) ? new Date(s.start) : new Date();
+                const logDate = formatters.dateISO.format(safeStart);
+                const logIn = formatters.shortTime.format(safeStart);
+                const logOut = formatters.shortTime.format(new Date(end));
+
+                this.data.logs.push({ 
+                    id: this.getNow(), date: logDate, type: 'Laboral', in: logIn, out: logOut, hours: gross, disconnection: disc, details: { bath: b, food: f, pause: pauseTime } 
+                });
+                this.data.activeShift = null;
+                this.save(); this.render(); this.uiClock(); this.toggleModal('clockOutModal', false);
+            },
+
+            render() {
+                const d = this.date, m = d.getMonth(), y = d.getFullYear();
+                setText('monthLabel', `${["ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"][m]} ${y}`);
+                const wn = this.getWeek(d);
+                setText('weekNum', wn);
+
+                const wLogs = this.data.logs.filter(l => this.getWeek(new Date(l.date + 'T00:00')) === wn && new Date(l.date).getFullYear() === y);
+                const wRes = this.calcStats(wLogs);
+                setText('weekTarget', this.fmt(wRes.target));
+                setText('weekWorked', this.fmt(wRes.worked));
+                this.setBadge('weekBalance', wRes.bal);
+                const config = this.data.config || {}; 
+                let pay = 0, he = Math.floor(wRes.bal / 60);
+                if (wRes.bal > 0) pay = (he <= 12) ? he * (config.rate1 || 50) : (12 * (config.rate1 || 50)) + ((he - 12) * (config.rate1 || 50));
+                setText('weekPay', `$${Math.round(pay)}`);
+
+                const isQ1 = d.getDate() <= 15;
+                setText('qName', isQ1 ? 'Q1' : 'Q2');
+                const qLogs = this.data.logs.filter(l => { const x = new Date(l.date + 'T00:00'); return x.getMonth() === m && (isQ1 ? x.getDate() <= 15 : x.getDate() > 15); });
+                const qRes = this.calcStats(qLogs);
+                setText('qTarget', this.fmt(qRes.target));
+                setText('qWorked', this.fmt(qRes.worked));
+                this.setBadge('qBalance', qRes.bal);
+                setText('qFails', qRes.fails);
+
+                const list = getElement('logList'); 
+                if(list) {
+                    list.innerHTML = '';
+                    const mLogs = this.data.logs.filter(l => new Date(l.date + 'T00:00').getMonth() === m).sort((a, b) => new Date(b.date) - new Date(a.date));
+                    mLogs.forEach(l => {
+                        const x = new Date(l.date + 'T00:00');
+                        const net = (l.type === 'Laboral' || l.type === 'Descanso') ? (l.hours - (l.disconnection || 0)) : 0;
+                        const bal = net - ((l.type === 'Laboral' || l.type === 'Falta') ? 480 : 0);
+                        let chips = '';
+                        if (l.details) {
+                            const pillClass = "px-1.5 py-0.5 rounded flex items-center gap-1 font-semibold text-[0.7rem] border border-border bg-bg/50 text-text-mute";
+                            const excessClass = "bg-red-900/40 text-red-300 border-red-900";
+                            if (l.details.bath > 0) chips += `<span class="${pillClass} ${l.details.bath > (config.bathAllow || 15) ? excessClass : ''}"><i class="ph-bold ph-toilet"></i> ${Math.round(l.details.bath)}m</span>`;
+                            if (l.details.food > 0) chips += `<span class="${pillClass} ${l.details.food > (config.foodAllow || 45) ? excessClass : ''}"><i class="ph-bold ph-hamburger"></i> ${Math.round(l.details.food)}m</span>`;
+                            if (l.details.pause > 0) chips += `<span class="${pillClass} text-warn border-warn"><i class="ph-bold ph-pause-circle"></i> ${Math.round(l.details.pause)}m</span>`;
+                        }
+                        const hourText = (l.type === 'Laboral' || (l.type === 'Descanso' && l.hours > 0)) ? `${l.in ? l.in + '-' + l.out + ' • ' : ''}<b>${this.fmt(net)}</b>` : '';
+                        
+                        let tagClass = "px-2.5 py-1 rounded-md text-[0.7rem] font-extrabold uppercase inline-flex items-center justify-center leading-none tracking-wide ";
+                        if(l.type === 'Laboral') tagClass += "bg-blue-900/30 text-blue-200";
+                        else if(l.type === 'Descanso') tagClass += "bg-slate-800 text-slate-300 border border-white/5";
+                        else if(l.type === 'Falta') tagClass += "bg-red-900/30 text-red-200";
+                        else if(l.type === 'Vacaciones') tagClass += "bg-amber-900/30 text-amber-200";
+
+                        const balClass = bal >= 0 ? "bg-emerald-900/30 text-emerald-300" : "bg-red-900/30 text-red-300";
+                        const div = document.createElement('div'); 
+                        div.className = 'p-4 border-b border-border grid grid-cols-[45px_1fr_auto] gap-4 items-center hover:bg-white/5 transition-colors cursor-pointer last:border-b-0'; 
+                        div.onclick = () => window.app.openModal(l.id); 
+                        div.innerHTML = `
+                            <div class="bg-card border border-border rounded-lg text-center py-1.5 flex flex-col items-center justify-center">
+                                <div class="text-base font-extrabold text-text leading-none mb-0.5">${x.getDate()}</div>
+                                <div class="text-[0.65rem] uppercase text-text-mute font-bold">${['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'][x.getDay()]}</div>
+                            </div>
+                            <div class="flex flex-col gap-1.5">
+                                <div class="flex items-center text-[0.85rem] font-semibold text-text"><span class="${tagClass}">${l.type}</span></div>
+                                ${hourText ? `<div class="text-[0.8rem] text-text-mute flex gap-2 items-center font-medium">${hourText}</div>` : ''}
+                                <div class="flex gap-1.5 flex-wrap text-[0.7rem]">${chips}</div>
+                            </div>
+                            <div class="text-center font-extrabold text-[0.8rem] px-2 py-1 rounded-md justify-self-end min-w-[60px] ${balClass}">${bal > 0 ? '+' : ''}${this.fmt(bal)}</div>`;
+                        list.appendChild(div);
+                    });
+                }
+            },
+
+            // --- UI HELPERS ---
+            setBadge(id, v) { 
+                const e = getElement(id); 
+                if(e) {
+                    e.textContent = (v > 0 ? '+' : '') + this.fmt(v); 
+                    e.className = `px-2 py-0.5 rounded-md font-extrabold text-[0.8rem] ${v >= 0 ? 'bg-emerald-900/30 text-emerald-300' : 'bg-red-900/30 text-red-300'}`; 
+                }
+            },
+            changeMonth(n) { this.date.setMonth(this.date.getMonth() + n); this.date.setDate(1); this.render(); },
+            changeWeek(n) { this.date.setDate(this.date.getDate() + (n * 7)); this.render(); },
+            goToday() { this.date = new Date(); this.render(); },
+            
+            // Unificando modales
+            toggleModal(id, show) {
+                const m = getElement(id);
+                if(m) {
+                    if(show) { m.classList.remove('hidden'); m.classList.add('flex'); }
+                    else { m.classList.remove('flex'); m.classList.add('hidden'); }
+                }
+            },
+            
+            openConfigModal() { 
+                const inpBath = getElement('cfgBath'); const inpFood = getElement('cfgFood');
+                const inpRate1 = getElement('cfgRate1'); const inpRate2 = getElement('cfgRate2');
+                if(inpBath) inpBath.value = this.data.config.bathAllow || 15; 
+                if(inpFood) inpFood.value = this.data.config.foodAllow || 45; 
+                if(inpRate1) inpRate1.value = this.data.config.rate1; 
+                if(inpRate2) inpRate2.value = this.data.config.rate2; 
+                this.switchTab('tSettings'); 
+                this.toggleModal('configModal', true);
+            },
+            
+            saveConfig() { 
+                const inpBath = getElement('cfgBath'); const inpFood = getElement('cfgFood');
+                const inpRate1 = getElement('cfgRate1'); const inpRate2 = getElement('cfgRate2');
+                this.data.config.bathAllow = inpBath ? (parseFloat(inpBath.value) || 15) : 15; 
+                this.data.config.foodAllow = inpFood ? (parseFloat(inpFood.value) || 45) : 45; 
+                this.data.config.rate1 = inpRate1 ? (parseFloat(inpRate1.value) || 50) : 50; 
+                this.data.config.rate2 = inpRate2 ? (parseFloat(inpRate2.value) || 75) : 75; 
+                this.save(); this.toggleModal('configModal', false); 
+            },
+            
+            switchTab(id) { 
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active')); 
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active', 'block')); 
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden')); 
+                if(event && event.target) event.target.classList.add('active'); 
+                const el = getElement(id);
+                if(el) { el.classList.add('active', 'block'); el.classList.remove('hidden'); }
+            },
+            
+            logout() { signOut(auth).then(() => window.location.reload()); }, 
+            
+            resetData() { if (confirm("¿Borrar todo?")) { this.data = { logs: [], config: this.data.config, activeShift: null }; this.save(); location.reload(); } },
+
+            openModal(id = null) {
+                this.editingId = id; 
+                this.toggleModal('logModal', true);
+
+                const now = new Date().toISOString().split('T')[0];
+                const inpDate = getElement('inpDate'); const inpType = getElement('inpType');
+                const inpIn = getElement('inpIn'); const inpOut = getElement('inpOut');
+                const inpBath = getElement('inpBathTime'); const inpFood = getElement('inpFoodTime'); const inpPause = getElement('inpPauseTime');
+
+                if(inpDate) inpDate.value = now; if(inpType) inpType.value = 'Laboral';
+                if(inpIn) inpIn.value = ''; if(inpOut) inpOut.value = '';
+                if(inpBath) inpBath.value = 0; if(inpFood) inpFood.value = 0; if(inpPause) inpPause.value = 0;
+
+                const btnDel = getElement('btnDelete');
+                if (id) {
+                    if(btnDel) btnDel.classList.remove('hidden');
+                    const l = this.data.logs.find(x => x.id === id);
+                    if(l) {
+                        if(inpDate) inpDate.value = l.date; if(inpType) inpType.value = l.type;
+                        if(inpIn) inpIn.value = l.in; if(inpOut) inpOut.value = l.out;
+                        if (l.details) { 
+                            if(inpBath) inpBath.value = Math.round(l.details.bath); 
+                            if(inpFood) inpFood.value = Math.round(l.details.food); 
+                            if(inpPause) inpPause.value = l.details.pause ? Math.round(l.details.pause) : 0;
                         }
                     }
-                });
-            }
-
-            // New Formula: (Balance - Pending Fixed) / Days
-            // Ensure precise subtraction
-            const balanceCents = Math.round(totalBalance * 100);
-            const pendingCents = Math.round(pendingFixedSum * 100);
-            const effectiveBalance = (balanceCents - pendingCents) / 100;
-            
-            const daily = effectiveBalance > 0 ? (effectiveBalance / daysLeft) : 0;
-
-            document.getElementById('formula-days-left').textContent = `${daysLeft} días • -${formatCurrency(pendingFixedSum)} fijos`;
-            document.getElementById('formula-days-left').className = "text-[10px] text-blue-400 font-bold uppercase tracking-wider mb-0.5";
-            document.getElementById('formula-daily').textContent = formatCurrency(daily);
-        }
-
-        // --- CHART JS ---
-        function updateChart(txs) {
-            const ctx = document.getElementById('financeChart');
-            if(!ctx) return;
-            
-            // Aggregate Expenses by Category
-            const cats = {};
-            txs.filter(t => t.type === 'expense').forEach(t => {
-                // Precise addition using Integer Math
-                const currentValCents = Math.round((cats[t.category] || 0) * 100);
-                const addValCents = Math.round(t.amount * 100);
-                cats[t.category] = (currentValCents + addValCents) / 100;
-            });
-
-            const labels = Object.keys(cats);
-            const data = Object.values(cats);
-
-            if(chartInstance) chartInstance.destroy();
-
-            chartInstance = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: data,
-                        backgroundColor: '#ef4444',
-                        borderRadius: 4,
-                        barThickness: 12
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { display: false },
-                        y: { display: false }
-                    }
+                } else {
+                    if(btnDel) btnDel.classList.add('hidden');
                 }
-            });
-        }
-
-        // --- UI INTERACTION ---
-        function switchTab(id) {
-            document.querySelectorAll('section[id^="view-"]').forEach(el => el.classList.add('hidden'));
-            document.getElementById(`view-${id}`).classList.remove('hidden');
+                this.toggleTimeInputs();
+            },
             
-            // Mobile Nav
-            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.nav-btn i').forEach(i => i.classList.remove('text-white'));
-            const mobBtn = document.getElementById(`nav-${id}`);
-            if(mobBtn) {
-                mobBtn.classList.add('active');
-                mobBtn.querySelector('i').classList.add('text-white');
-            }
-
-            // Desktop Nav
-            document.querySelectorAll('.g-link').forEach(l => l.classList.remove('active'));
-            const deskLink = document.getElementById(`desk-link-${id}`);
-            if(deskLink) deskLink.classList.add('active');
-
-            if(id === 'dashboard') renderDashboard();
-            if(id === 'history') renderHistory();
-            if(id === 'fixed') renderFixed();
-        }
-
-        function filterHistory(type) {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            document.querySelector(`.filter-btn[data-filter="${type}"]`).classList.add('active');
-            renderHistory();
-        }
-
-        function renderCategoryChips(type) {
-            const container = document.getElementById('category-chips');
-            container.innerHTML = '';
-            const list = type === 'expense' ? CATEGORIES.expense : CATEGORIES.income;
+            toggleTimeInputs() { 
+                const typeEl = getElement('inpType'); const timeInputs = getElement('timeInputs');
+                if(typeEl && timeInputs) timeInputs.style.display = (typeEl.value === 'Falta' || typeEl.value === 'Vacaciones') ? 'none' : 'block'; 
+            },
             
-            // Use DocumentFragment for performant DOM Insertion
-            const fragment = document.createDocumentFragment();
+            calcPreview() { 
+                const i = getElement('inpIn')?.value; const o = getElement('inpOut')?.value;
+                const b = parseFloat(getElement('inpBathTime')?.value) || 0;
+                const f = parseFloat(getElement('inpFoodTime')?.value) || 0;
+                const p = parseFloat(getElement('inpPauseTime')?.value) || 0; 
+                const g = this.calcHours(i, o);
+                const config = this.data.config || {};
+                const disc = Math.max(0, b - (config.bathAllow || 15)) + Math.max(0, f - (config.foodAllow || 45));
+                setText('calcHoursDisplay', g === -1 ? 'Error' : this.fmt(g - p - disc));
+            },
             
-            list.forEach(c => {
-                const div = document.createElement('div');
-                div.className = "chip px-4 py-2 rounded-full text-[10px] font-bold cursor-pointer flex items-center gap-1";
-                div.innerHTML = `<i class="ph-fill ${c.icon} ${c.color}"></i> ${c.id}`;
-                div.onclick = () => selectChip(c.id);
-                div.dataset.id = c.id;
-                fragment.appendChild(div);
-            });
-            
-            container.appendChild(fragment);
-        }
+            saveLog() {
+                const d = getElement('inpDate')?.value; const t = getElement('inpType')?.value;
+                const i = getElement('inpIn')?.value; const o = getElement('inpOut')?.value;
+                const b = parseFloat(getElement('inpBathTime')?.value) || 0;
+                const f = parseFloat(getElement('inpFoodTime')?.value) || 0;
+                const p = parseFloat(getElement('inpPauseTime')?.value) || 0;
 
-        function selectChip(catId) {
-            document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-            const selected = document.querySelector(`.chip[data-id="${catId}"]`);
-            if(selected) selected.classList.add('active');
-            document.getElementById('t-category').value = catId;
-        }
-
-        function setupSettingsUI() {
-            if(!window.appData.settings) return;
-            const s = window.appData.settings;
-            const radios = document.getElementsByName('pay-freq');
-            for(let r of radios) { if(r.value === s.frequency) r.checked = true; }
-            
-            const selPayday = document.getElementById('payday-select'); if(selPayday && s.payday) selPayday.value = s.payday;
-            const selP1 = document.getElementById('payday-1-select'); if(selP1 && s.payday1) selP1.value = s.payday1;
-            const selP2 = document.getElementById('payday-2-select'); if(selP2 && s.payday2) selP2.value = s.payday2;
-            
-            // Forced Savings Toggle
-            const toggle = document.getElementById('toggle-forced-savings');
-            if(toggle && s.forcedSavings !== undefined) toggle.checked = s.forcedSavings;
-            
-            togglePaydayInput();
-        }
-
-        function togglePaydayInput() {
-            const freq = document.querySelector('input[name="pay-freq"]:checked')?.value || 'biweekly';
-            const mCont = document.getElementById('monthly-select-container');
-            const bCont = document.getElementById('biweekly-custom-container');
-            
-            if (mCont) mCont.classList.add('hidden');
-            if (bCont) bCont.classList.add('hidden');
-            
-            if (freq === 'monthly' && mCont) mCont.classList.remove('hidden');
-            if (freq === 'biweekly-custom' && bCont) bCont.classList.remove('hidden');
-        }
-
-        // MODAL HELPERS
-        function openModal(id) {
-            const overlay = document.getElementById(id);
-            overlay.classList.add('is-open'); // Removed hidden handling for CSS transition
-        }
-        function closeModal(id) {
-            document.getElementById(id).classList.remove('is-open');
-        }
-        
-        // Show Toast Helper
-        function showToast(msg) {
-            const t = document.getElementById('toast');
-            const tm = document.getElementById('toast-msg');
-            tm.textContent = msg;
-            t.classList.remove('opacity-0', 'translate-y-[-20px]');
-            setTimeout(() => {
-                 t.classList.add('opacity-0', 'translate-y-[-20px]');
-            }, 3000);
-        }
-
-        // Init Selects
-        document.addEventListener('DOMContentLoaded', () => {
-            const sels = [document.getElementById('f-day'), document.getElementById('payday-select'), document.getElementById('payday-1-select'), document.getElementById('payday-2-select')];
-            sels.forEach(s => {
-                if(s) {
-                    for(let i=1; i<=31; i++) s.innerHTML += `<option value="${i}">${i}</option>`;
+                if (!d) return this.showMessage("Fecha requerida");
+                let h = 0, disc = 0; 
+                if (t === 'Laboral') {
+                    if (!i || !o) return this.showMessage("Requiere entrada y salida");
+                    h = this.calcHours(i, o) - p; 
+                    if (h <= 0) return this.showMessage("Horario inválido"); 
+                } else if (t === 'Descanso') {
+                    if (i && o) { h = this.calcHours(i, o) - p; if (h < 0) return this.showMessage("Horario inválido"); } else { h = 0; }
                 }
-            });
-            updateDateHeader();
+                if (t === 'Laboral' || (t === 'Descanso' && h > 0)) {
+                    const config = this.data.config || {};
+                    disc = Math.max(0, b - (config.bathAllow || 15)) + Math.max(0, f - (config.foodAllow || 45));
+                }
+
+                const log = { id: this.editingId || this.getNow(), date: d, type: t, in: i || '', out: o || '', hours: h, disconnection: disc, details: { bath: b, food: f, pause: p } };
+                if (this.editingId) this.data.logs[this.data.logs.findIndex(x => x.id === this.editingId)] = log; else this.data.logs.push(log);
+                this.save(); this.render(); this.toggleModal('logModal', false);
+            },
+            
+            deleteLog() { if (confirm("¿Eliminar?")) { this.data.logs = this.data.logs.filter(x => x.id !== this.editingId); this.save(); this.render(); this.toggleModal('logModal', false); } },
+            
+            showMessage(m) { setText('msgText', m); const i = getElement('msgIcon'); if(i) i.className = 'ph-fill ph-warning-circle text-alert'; this.toggleModal('msgModal', true); },
+            showSuccess(m) { setText('msgText', m); const i = getElement('msgIcon'); if(i) i.className = 'ph-fill ph-check-circle text-money'; this.toggleModal('msgModal', true); },
+            
+            processImport() { 
+                const ta = getElement('importTextArea'); const t = ta ? ta.value : ''; 
+                if (!t) return; 
+                const l = t.split('\n'); let c = 0; 
+                l.forEach(x => { const p = x.split(/[\t,]+/); if (p.length >= 4) { this.data.logs.push({ id: Date.now() + c, date: p[0], type: p[1], in: p[2], out: p[3], hours: this.calcHours(p[2], p[3]), disconnection: 0 }); c++; } }); 
+                this.save(); this.toggleModal('importModal', false); this.showSuccess(c + " importados"); 
+            },
+            
+            importJson(input) {
+                const file = input.files[0]; if(!file) return;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const json = JSON.parse(e.target.result);
+                        if (Array.isArray(json.logs)) {
+                            let count = 0;
+                            json.logs.forEach(l => { if (!this.data.logs.find(x => x.id === l.id)) { this.data.logs.push(l); count++; } });
+                            if(json.config) this.data.config = { ...this.data.config, ...json.config };
+                            
+                            // NUEVO: Restaurar turno activo si existe en el backup y no hay uno actual
+                            if (json.activeShift && !this.data.activeShift) {
+                                this.data.activeShift = json.activeShift;
+                            }
+
+                            this.save(); this.render(); this.uiClock(); 
+                            this.showSuccess(count > 0 ? `${count} recuperados` : "Actualizado");
+                        } else this.showMessage("Archivo inválido");
+                    } catch (err) { this.showMessage("Error JSON"); }
+                    input.value = ''; 
+                };
+                reader.readAsText(file);
+            },
+            exportBackup() { const a = document.createElement('a'); a.href = 'data:application/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(this.data)); a.download = 'backup.json'; a.click(); }
+        };
+
+        // Event Listener para extensión externa (si existe)
+        window.addEventListener("message", (event) => {
+            if (event.data.type !== "GODSPLAN_COMMAND") return;
+            const action = event.data.action;
+            switch(action) {
+                case 'RESUME_WORK': window.app.data.activeShift ? window.app.stopBreak() : window.app.clockIn(); break;
+                case 'START_BREAK_FOOD': if (!window.app.data.activeShift) window.app.clockIn(); window.app.startBreak('food'); break;
+                case 'START_BREAK_BATH': if (!window.app.data.activeShift) window.app.clockIn(); window.app.startBreak('bathroom'); break;
+                case 'END_SHIFT': if (window.app.data.activeShift) window.app.finishShiftReal(); break;
+            }
         });
 
+        // Handler de errores
+        window.onerror = function (m) { if (!String(m).includes('popup')) window.app.showMessage(m); };
+
+        // Iniciar
+        document.addEventListener('DOMContentLoaded', () => window.app.init());
     </script>
 </body>
 </html>
