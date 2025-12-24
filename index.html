@@ -213,15 +213,15 @@
                 
                 <!-- RELOJ -->
                 <div id="realWorldClock" class="flex flex-col items-end px-1.5 md:px-2 py-0.5 border-r border-border/50 shrink-0">
-                    <div class="hidden md:flex text-[0.6rem] text-text-mute font-black tracking-wider leading-none mb-0.5 items-center gap-1 justify-end">
-                          <span id="syncDot" class="w-1.5 h-1.5 rounded-full bg-red-500 inline-block transition-colors duration-300"></span> Hora Real
+                    <div class="flex text-[0.6rem] text-text-mute font-black tracking-wider leading-none mb-0.5 items-center gap-1 justify-end">
+                          <span id="syncDot" class="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block animate-pulse"></span> Hora Real
                     </div>
                     <!-- En móvil solo mostramos la hora, un poco más pequeña -->
                     <div class="text-xs md:text-[0.9rem] font-mono font-bold text-text leading-none tabular-nums text-right" id="realClockTime">--:--:--</div>
                 </div>
 
                 <!-- BOTONES DE ACCIÓN -->
-                <button class="bg-transparent border border-border text-text-mute text-lg md:text-base p-1.5 rounded-lg flex items-center justify-center hover:bg-bg hover:text-text cursor-pointer shrink-0" onclick="window.app.syncData()" title="Sincronizar"><i class="ph-bold ph-arrows-clockwise"></i></button>
+                <button class="bg-transparent border border-border text-text-mute text-lg md:text-base p-1.5 rounded-lg flex items-center justify-center hover:bg-bg hover:text-text cursor-pointer shrink-0" onclick="window.app.syncServerTime()" title="Sincronizar Forzado"><i class="ph-bold ph-arrows-clockwise"></i></button>
                 <button class="bg-transparent border border-border text-text-mute text-lg md:text-base p-1.5 rounded-lg flex items-center justify-center hover:bg-bg hover:text-text cursor-pointer shrink-0" onclick="window.app.openConfigModal()" title="Menú"><i class="ph-bold ph-gear"></i></button>
 
                 <!-- NAVEGACIÓN FECHAS -->
@@ -255,7 +255,7 @@
                         <div class="text-[0.7rem] uppercase tracking-widest text-text-mute font-extrabold mb-1.5" id="clockStatus">TURNO ACTIVO</div>
                         <div class="text-[clamp(2.5rem,12vw,4rem)] font-extrabold text-text tabular-nums leading-none" id="clockDisplay">00:00</div>
                         <button id="shiftStartTime" onclick="window.app.openStartTimeEdit()" class="text-[0.7rem] text-text-mute font-bold mt-1.5 uppercase tracking-wide opacity-80 hover:text-text hover:opacity-100 transition-all cursor-pointer bg-transparent border-none flex items-center justify-center gap-1 mx-auto" style="display:none;"></button>
-                        <div id="networkTimeBadge" class="text-[0.65rem] text-money font-bold mt-1.5 opacity-0 transition-opacity duration-500"><i class="ph-bold ph-globe"></i> Local</div>
+                        <div id="networkTimeBadge" class="text-[0.65rem] text-amber-500 font-bold mt-1.5 opacity-100 transition-all duration-300 flex items-center gap-1"><i class="ph-bold ph-warning"></i> Local</div>
                     </div>
 
                     <button class="side-clock flex flex-col items-center justify-center opacity-50 p-1.5 rounded-lg relative z-10 w-full h-full border-none hover:bg-bg hover:opacity-100 hover:scale-105 transition-all cursor-pointer" id="clockFoodContainer" onclick="window.app.openTimerEdit('food')" type="button">
@@ -507,21 +507,77 @@
         window.app = {
             data: { logs: [], config: { rate1: 50, rate2: 75, bathAllow: 15, foodAllow: 45 }, activeShift: null },
             userId: null, offline: false, editingId: null, date: new Date(), timer: null, processing: false, 
-            editingTimerType: null, timeOffset: 0, isRegistering: false,
+            editingTimerType: null, timeOffset: 0, isRegistering: false, isTimeSynced: false,
+
+            // --- SISTEMA DE TIEMPO REAL ROBUSTO ---
+            async syncServerTime() {
+                const setTime = (serverDateStr) => {
+                     // Parsear diferentes formatos
+                     const serverTime = new Date(serverDateStr).getTime();
+                     if(isNaN(serverTime)) throw new Error('Invalid Date');
+                     
+                     const deviceTime = Date.now();
+                     this.timeOffset = serverTime - deviceTime;
+                     this.isTimeSynced = true;
+                     console.log("Sincronizado con Servidor. Offset:", this.timeOffset);
+                     this.updateSyncUI(true);
+                };
+
+                this.updateSyncUI(false); // Poner en ámbar/aviso mientras carga
+
+                try {
+                    // INTENTO 1: timeapi.io (Suele ser más rápido y estable)
+                    const r = await fetch('https://timeapi.io/api/Time/current/zone?timeZone=America/Mexico_City', { cache: "no-store" });
+                    if(r.ok) {
+                        const data = await r.json();
+                        setTime(data.dateTime);
+                        return;
+                    }
+                    throw new Error('TimeAPI falló');
+                } catch (e) {
+                    console.warn("Fuente Primaria falló, intentando respaldo...", e);
+                    try {
+                        // INTENTO 2: WorldTimeAPI (Respaldo clásico)
+                        const r2 = await fetch('https://worldtimeapi.org/api/timezone/America/Mexico_City', { cache: "no-store" });
+                        if(r2.ok) {
+                            const data2 = await r2.json();
+                            setTime(data2.datetime);
+                            return;
+                        }
+                    } catch (e2) {
+                        console.error("Fallo total de sincronización horaria. Usando reloj local.", e2);
+                        this.isTimeSynced = false;
+                        this.timeOffset = 0; // Fallback a local
+                        this.updateSyncUI(false);
+                    }
+                }
+            },
+
+            updateSyncUI(synced) {
+                const dot = getElement('syncDot');
+                const badge = getElement('networkTimeBadge');
+                
+                if(dot) {
+                    // Verde solido si synced, Ambar parpadeante si no
+                    dot.className = synced 
+                        ? "w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block shadow-[0_0_8px_#10b981] transition-all duration-500" 
+                        : "w-1.5 h-1.5 rounded-full bg-amber-500 inline-block animate-pulse transition-all duration-500";
+                }
+                
+                if(badge) {
+                    badge.innerHTML = synced ? '<i class="ph-bold ph-globe"></i> Red' : '<i class="ph-bold ph-warning"></i> Local';
+                    badge.className = synced 
+                        ? "text-[0.65rem] text-emerald-400 font-bold mt-1.5 opacity-100 flex items-center gap-1 transition-colors duration-500" 
+                        : "text-[0.65rem] text-amber-500 font-bold mt-1.5 opacity-100 flex items-center gap-1 transition-colors duration-500";
+                }
+            },
 
             init() {
-                // Pide la hora real a una API externa
-                fetch('https://worldtimeapi.org/api/timezone/America/Mexico_City')
-                    .then(r => r.json())
-                    .then(data => {
-                        const serverTime = new Date(data.datetime).getTime();
-                        const deviceTime = Date.now();
-                        // Calculamos la diferencia: Si mi reloj está adelantado o atrasado
-                        this.timeOffset = serverTime - deviceTime; 
-                        
-                        console.log("Hora sincronizada. Offset:", this.timeOffset);
-                    })
-                    .catch(err => console.log("Usando hora local (sin internet o error)"));
+                // 1. Sincronización Inmediata
+                this.syncServerTime();
+                
+                // 2. Re-sincronización periódica (cada 5 min para evitar drift)
+                setInterval(() => this.syncServerTime(), 300000); 
 
                 this.updateRealClockUI();
                 setInterval(() => this.updateRealClockUI(), 1000);
@@ -600,17 +656,6 @@
 
                             this.render();
                             this.uiClock();
-
-                            // Efecto visual en el punto de sincronización
-                            const dot = getElement('syncDot');
-                            if(dot) {
-                                dot.classList.remove('bg-red-500');
-                                dot.classList.add('bg-green-500', 'shadow-[0_0_10px_rgba(34,197,94,0.5)]');
-                                setTimeout(() => {
-                                    dot.classList.remove('bg-green-500', 'shadow-[0_0_10px_rgba(34,197,94,0.5)]');
-                                    dot.classList.add('bg-red-500');
-                                }, 800);
-                            }
                         }
                     }, (error) => {
                         console.error("Error en listener:", error);
@@ -686,8 +731,12 @@
             },
 
             // --- CORE ---
-            updateRealClockUI() { setText('realClockTime', formatters.clock.format(new Date())); },
-            getNow() { return Date.now() + this.timeOffset; },
+            updateRealClockUI() { setText('realClockTime', formatters.clock.format(new Date(this.getNow()))); }, // Mostrar hora sincronizada
+            
+            getNow() { 
+                // CRÍTICO: Usar el offset calculado para la "Verdadera Hora"
+                return Date.now() + (this.timeOffset || 0); 
+            },
             
             goOffline() { this.offline = true; this.loadLocal(); },
             
@@ -977,8 +1026,8 @@
                 const logIn = formatters.shortTime.format(safeStart);
                 const logOut = formatters.shortTime.format(new Date(end));
 
-                this.data.logs.push({
-                    id: this.getNow(), date: logDate, type: 'Laboral', in: logIn, out: logOut, hours: gross, disconnection: disc, details: { bath: b, food: f, pause: pauseTime }
+                this.data.logs.push({ 
+                    id: this.getNow(), date: logDate, type: 'Laboral', in: logIn, out: logOut, hours: gross, disconnection: disc, details: { bath: b, food: f, pause: pauseTime } 
                 });
                 this.data.activeShift = null;
                 this.save(); this.render(); this.uiClock(); this.toggleModal('clockOutModal', false);
@@ -1211,7 +1260,7 @@
                                 this.data.activeShift = json.activeShift;
                             }
 
-                            this.save(); this.render(); this.uiClock(); // Se agrega this.uiClock() para refrescar el reloj
+                            this.save(); this.render(); this.uiClock(); 
                             this.showSuccess(count > 0 ? `${count} recuperados` : "Actualizado");
                         } else this.showMessage("Archivo inválido");
                     } catch (err) { this.showMessage("Error JSON"); }
