@@ -98,6 +98,7 @@
                               linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
             background-size: 50px 50px;
             mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
+            -webkit-mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
             pointer-events: none;
         }
 
@@ -276,6 +277,7 @@
 
             <!-- KPIs -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <!-- KPI SEMANA -->
                 <div class="bg-card border border-border rounded-xl p-4">
                     <div class="flex justify-between items-center mb-2.5 pb-2 border-b border-border">
                         <div class="flex items-center gap-2">
@@ -290,8 +292,20 @@
                     <div class="flex justify-between items-center mt-2.5 pt-1.5 border-t border-dashed border-border text-[0.9rem]">
                         <span class="text-text-mute">Pago Extra</span><strong class="text-money" id="weekPay">$0</strong>
                     </div>
+                    
+                    <!-- NEW OVERTIME GOAL -->
+                    <div id="overtimeGoalContainer" class="mt-3 hidden">
+                        <div class="flex justify-between text-[0.65rem] font-bold text-text-mute uppercase mb-1">
+                            <span class="flex items-center gap-1"><i class="ph-fill ph-trophy text-gold"></i> Meta Extra</span>
+                            <span id="otProgressText" class="text-text">0h / 0h</span>
+                        </div>
+                        <div class="w-full bg-input-bg h-2 rounded-full overflow-hidden border border-white/5">
+                            <div id="otProgressBar" class="bg-brand h-full w-0 transition-all duration-700"></div>
+                        </div>
+                    </div>
                 </div>
 
+                <!-- KPI QUINCENA -->
                 <div class="bg-card border border-border rounded-xl p-4">
                     <div class="flex justify-between items-center mb-2.5 pb-2 border-b border-border">
                         <span class="text-[0.9rem] font-extrabold text-text">Quincena <span id="qName">--</span></span>
@@ -349,11 +363,12 @@
                         </div>
                     </div>
                     <div>
-                        <p class="text-[0.65rem] font-black text-money mb-3 uppercase tracking-wider flex items-center gap-1"><i class="ph-bold ph-currency-dollar"></i> Pagos</p>
-                        <div class="grid grid-cols-2 gap-4">
+                        <p class="text-[0.65rem] font-black text-money mb-3 uppercase tracking-wider flex items-center gap-1"><i class="ph-bold ph-currency-dollar"></i> Pagos & Metas</p>
+                        <div class="grid grid-cols-2 gap-4 mb-4">
                             <div class="bg-input-bg p-3 rounded-xl border border-border"><label class="block text-text-mute text-[0.65rem] font-bold mb-1 uppercase">Base</label><input type="number" id="cfgRate1" class="bg-transparent w-full font-bold text-lg text-text focus:outline-none"></div>
                             <div class="bg-input-bg p-3 rounded-xl border border-border"><label class="block text-text-mute text-[0.65rem] font-bold mb-1 uppercase">Extra</label><input type="number" id="cfgRate2" class="bg-transparent w-full font-bold text-lg text-text focus:outline-none"></div>
                         </div>
+                        <div class="bg-input-bg p-3 rounded-xl border border-border"><label class="block text-text-mute text-[0.65rem] font-bold mb-1 uppercase">Meta Extra (Semanal)</label><input type="number" id="cfgOvertimeGoal" class="bg-transparent w-full font-bold text-lg text-text focus:outline-none" placeholder="0"></div>
                     </div>
                 </div>
                 <div id="tData" class="tab-content hidden animate-fade-in">
@@ -464,7 +479,7 @@
         // 1. Configuración Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyC-cUzYmh5G9y_W2RXbO1Uma4DlKKmnnss",
-            authDomain: "odsplan-adherencia.firebaseapp.com",
+            authDomain: "godsplan-adherencia.firebaseapp.com",
             projectId: "godsplan-adherencia",
             storageBucket: "godsplan-adherencia.firebasestorage.app",
             messagingSenderId: "660801277434",
@@ -505,20 +520,20 @@
 
         // 5. Lógica de la App (Integrada en el Módulo)
         window.app = {
-            data: { logs: [], config: { rate1: 50, rate2: 75, bathAllow: 15, foodAllow: 45 }, activeShift: null },
+            data: { logs: [], config: { rate1: 50, rate2: 75, bathAllow: 15, foodAllow: 45, overtimeGoal: 0 }, activeShift: null },
             userId: null, offline: false, editingId: null, date: new Date(), timer: null, processing: false, 
             editingTimerType: null, timeOffset: 0, isRegistering: false, isTimeSynced: false,
 
             // --- SISTEMA DE TIEMPO REAL ROBUSTO (FIX DEFINITIVO) ---
             async syncServerTime() {
                 const setTime = (serverDateStr) => {
-                     const serverTime = new Date(serverDateStr).getTime();
-                     if(isNaN(serverTime)) throw new Error('Invalid Date');
-                     const deviceTime = Date.now();
-                     this.timeOffset = serverTime - deviceTime;
-                     this.isTimeSynced = true;
-                     console.log("Sincronizado. Offset:", this.timeOffset);
-                     this.updateSyncUI(true);
+                      const serverTime = new Date(serverDateStr).getTime();
+                      if(isNaN(serverTime)) throw new Error('Invalid Date');
+                      const deviceTime = Date.now();
+                      this.timeOffset = serverTime - deviceTime;
+                      this.isTimeSynced = true;
+                      console.log("Sincronizado. Offset:", this.timeOffset);
+                      this.updateSyncUI(true);
                 };
 
                 this.updateSyncUI(false); 
@@ -622,7 +637,7 @@
                             appView.classList.remove('animate-fade-in');
                         }
                         getElement('login-view')?.classList.remove('hidden');
-                        this.data = { logs: [], config: { rate1: 50, rate2: 75, bathAllow: 15, foodAllow: 45 }, activeShift: null };
+                        this.data = { logs: [], config: { rate1: 50, rate2: 75, bathAllow: 15, foodAllow: 45, overtimeGoal: 0 }, activeShift: null };
                         
                         // 2. Solo cargamos local si NO hay usuario
                         this.loadLocal(); 
@@ -646,7 +661,7 @@
                             // Actualizamos datos locales con la verdad de la nube
                             this.data = remoteData;
                             this.data.logs = this.data.logs || [];
-                            this.data.config = this.data.config || { rate1: 50, rate2: 75, bathAllow: 15, foodAllow: 45 };
+                            this.data.config = this.data.config || { rate1: 50, rate2: 75, bathAllow: 15, foodAllow: 45, overtimeGoal: 0 };
                             
                             // SANITIZACIÓN: Si activeShift existe pero tiene start corrupto, lo corregimos
                             if (this.data.activeShift && !Number.isFinite(this.data.activeShift.start)) {
@@ -1049,6 +1064,24 @@
                 if (wRes.bal > 0) pay = (he <= 12) ? he * (config.rate1 || 50) : (12 * (config.rate1 || 50)) + ((he - 12) * (config.rate1 || 50));
                 setText('weekPay', `$${Math.round(pay)}`);
 
+                // --- LÓGICA META DE HORAS EXTRAS (NUEVO) ---
+                const otGoal = config.overtimeGoal || 0;
+                const otContainer = getElement('overtimeGoalContainer');
+                if (otGoal > 0) {
+                    if(otContainer) otContainer.classList.remove('hidden');
+                    const otHours = Math.max(0, wRes.bal / 60);
+                    const otPct = Math.min(100, (otHours / otGoal) * 100);
+                    setText('otProgressText', `${this.fmt(otHours * 60)} / ${otGoal}h`);
+                    const bar = getElement('otProgressBar');
+                    if(bar) {
+                        bar.style.width = `${otPct}%`;
+                        bar.className = `h-full transition-all duration-700 ${otPct >= 100 ? 'bg-money shadow-[0_0_10px_rgba(22,163,74,0.5)]' : 'bg-brand'}`;
+                    }
+                } else {
+                    if(otContainer) otContainer.classList.add('hidden');
+                }
+                // -------------------------------------------
+
                 const isQ1 = d.getDate() <= 15;
                 setText('qName', isQ1 ? 'Q1' : 'Q2');
                 const qLogs = this.data.logs.filter(l => { const x = new Date(l.date + 'T00:00'); return x.getMonth() === m && (isQ1 ? x.getDate() <= 15 : x.getDate() > 15); });
@@ -1126,10 +1159,15 @@
             openConfigModal() { 
                 const inpBath = getElement('cfgBath'); const inpFood = getElement('cfgFood');
                 const inpRate1 = getElement('cfgRate1'); const inpRate2 = getElement('cfgRate2');
+                // NUEVO INPUT
+                const inpOvertime = getElement('cfgOvertimeGoal');
+
                 if(inpBath) inpBath.value = this.data.config.bathAllow || 15; 
                 if(inpFood) inpFood.value = this.data.config.foodAllow || 45; 
                 if(inpRate1) inpRate1.value = this.data.config.rate1; 
                 if(inpRate2) inpRate2.value = this.data.config.rate2; 
+                if(inpOvertime) inpOvertime.value = this.data.config.overtimeGoal || 0;
+
                 this.switchTab('tSettings'); 
                 this.toggleModal('configModal', true);
             },
@@ -1137,10 +1175,14 @@
             saveConfig() { 
                 const inpBath = getElement('cfgBath'); const inpFood = getElement('cfgFood');
                 const inpRate1 = getElement('cfgRate1'); const inpRate2 = getElement('cfgRate2');
+                const inpOvertime = getElement('cfgOvertimeGoal');
+
                 this.data.config.bathAllow = inpBath ? (parseFloat(inpBath.value) || 15) : 15; 
                 this.data.config.foodAllow = inpFood ? (parseFloat(inpFood.value) || 45) : 45; 
                 this.data.config.rate1 = inpRate1 ? (parseFloat(inpRate1.value) || 50) : 50; 
                 this.data.config.rate2 = inpRate2 ? (parseFloat(inpRate2.value) || 75) : 75; 
+                this.data.config.overtimeGoal = inpOvertime ? (parseFloat(inpOvertime.value) || 0) : 0;
+
                 this.save(); this.toggleModal('configModal', false); 
             },
             
