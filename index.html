@@ -313,7 +313,10 @@
                     </div>
                     <div class="flex justify-between items-center mb-1 text-[0.9rem]"><span class="text-text-mute">Meta</span><strong id="qTarget" class="text-text">0:00</strong></div>
                     <div class="flex justify-between items-center mb-1 text-[0.9rem]"><span class="text-text-mute">Trabajado</span><strong class="text-brand" id="qWorked">0:00</strong></div>
-                    <div class="flex justify-between items-center mt-2.5 text-[0.9rem]"><span class="text-alert">Faltas</span><strong class="text-alert" id="qFails">0</strong></div>
+                    
+                    <!-- NEW RETARDOS ROW -->
+                    <div class="flex justify-between items-center mt-2.5 text-[0.9rem]"><span class="text-warn">Retardos</span><strong class="text-warn" id="qLate">0</strong></div>
+                    <div class="flex justify-between items-center mb-1 text-[0.9rem]"><span class="text-alert">Faltas</span><strong class="text-alert" id="qFails">0</strong></div>
                 </div>
             </div>
 
@@ -368,7 +371,11 @@
                             <div class="bg-input-bg p-3 rounded-xl border border-border"><label class="block text-text-mute text-[0.65rem] font-bold mb-1 uppercase">Base</label><input type="number" id="cfgRate1" class="bg-transparent w-full font-bold text-lg text-text focus:outline-none"></div>
                             <div class="bg-input-bg p-3 rounded-xl border border-border"><label class="block text-text-mute text-[0.65rem] font-bold mb-1 uppercase">Extra</label><input type="number" id="cfgRate2" class="bg-transparent w-full font-bold text-lg text-text focus:outline-none"></div>
                         </div>
-                        <div class="bg-input-bg p-3 rounded-xl border border-border"><label class="block text-text-mute text-[0.65rem] font-bold mb-1 uppercase">Meta Extra (Semanal)</label><input type="number" id="cfgOvertimeGoal" class="bg-transparent w-full font-bold text-lg text-text focus:outline-none" placeholder="0"></div>
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div class="bg-input-bg p-3 rounded-xl border border-border"><label class="block text-text-mute text-[0.65rem] font-bold mb-1 uppercase">Meta Extra (h)</label><input type="number" id="cfgOvertimeGoal" class="bg-transparent w-full font-bold text-lg text-text focus:outline-none" placeholder="0"></div>
+                            <!-- NEW START TIME INPUT -->
+                            <div class="bg-input-bg p-3 rounded-xl border border-border"><label class="block text-text-mute text-[0.65rem] font-bold mb-1 uppercase">Hora Entrada</label><input type="time" id="cfgStartTime" class="bg-transparent w-full font-bold text-lg text-text focus:outline-none [color-scheme:dark]"></div>
+                        </div>
                     </div>
                 </div>
                 <div id="tData" class="tab-content hidden animate-fade-in">
@@ -520,7 +527,7 @@
 
         // 5. Lógica de la App (Integrada en el Módulo)
         window.app = {
-            data: { logs: [], config: { rate1: 50, rate2: 75, bathAllow: 15, foodAllow: 45, overtimeGoal: 0 }, activeShift: null },
+            data: { logs: [], config: { rate1: 50, rate2: 75, bathAllow: 15, foodAllow: 45, overtimeGoal: 0, startTime: "09:00" }, activeShift: null },
             userId: null, offline: false, editingId: null, date: new Date(), timer: null, processing: false, 
             editingTimerType: null, timeOffset: 0, isRegistering: false, isTimeSynced: false,
 
@@ -661,7 +668,7 @@
                             // Actualizamos datos locales con la verdad de la nube
                             this.data = remoteData;
                             this.data.logs = this.data.logs || [];
-                            this.data.config = this.data.config || { rate1: 50, rate2: 75, bathAllow: 15, foodAllow: 45, overtimeGoal: 0 };
+                            this.data.config = this.data.config || { rate1: 50, rate2: 75, bathAllow: 15, foodAllow: 45, overtimeGoal: 0, startTime: "09:00" };
                             
                             // SANITIZACIÓN: Si activeShift existe pero tiene start corrupto, lo corregimos
                             if (this.data.activeShift && !Number.isFinite(this.data.activeShift.start)) {
@@ -906,7 +913,27 @@
             },
             getWeek(d) { d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7)); var y = new Date(Date.UTC(d.getUTCFullYear(), 0, 1)); return Math.ceil((((d - y) / 86400000) + 1) / 7); },
             calcHours(i, o) { if (!i || !o) return 0; const [h1, m1] = i.split(':'), [h2, m2] = o.split(':'); const d = ((h2 * 60 + +m2) - (h1 * 60 + +m1)); return d < 0 ? -1 : d; },
-            calcStats(logs) { let t = 0, w = 0, f = 0; logs.forEach(l => { t += (l.type === 'Laboral' || l.type === 'Falta') ? 480 : 0; w += (l.type === 'Laboral' || l.type === 'Descanso') ? (l.hours - (l.disconnection || 0)) : 0; if (l.type === 'Falta') f++; }); return { target: t, worked: w, bal: w - t, fails: f }; },
+            
+            // LÓGICA RETARDOS MODIFICADA
+            calcStats(logs) { 
+                let t = 0, w = 0, f = 0, l = 0; // l = late
+                const startLimit = this.data.config.startTime || "09:00"; // Default 09:00
+
+                logs.forEach(log => { 
+                    if (log.type === 'Laboral') {
+                        t += 480;
+                        w += (log.hours - (log.disconnection || 0));
+                        // Check Late
+                        if (log.in && log.in > startLimit) l++;
+                    } else if (log.type === 'Falta') {
+                        t += 480;
+                        f++;
+                    } else if (log.type === 'Descanso') {
+                        w += (log.hours - (log.disconnection || 0));
+                    }
+                }); 
+                return { target: t, worked: w, bal: w - t, fails: f, late: l }; 
+            },
 
             // --- ACTIONS ---
             openTimerEdit(type) {
@@ -1089,6 +1116,8 @@
                 setText('qTarget', this.fmt(qRes.target));
                 setText('qWorked', this.fmt(qRes.worked));
                 this.setBadge('qBalance', qRes.bal);
+                // RETARDOS
+                setText('qLate', qRes.late);
                 setText('qFails', qRes.fails);
 
                 const list = getElement('logList'); 
@@ -1159,14 +1188,15 @@
             openConfigModal() { 
                 const inpBath = getElement('cfgBath'); const inpFood = getElement('cfgFood');
                 const inpRate1 = getElement('cfgRate1'); const inpRate2 = getElement('cfgRate2');
-                // NUEVO INPUT
                 const inpOvertime = getElement('cfgOvertimeGoal');
+                const inpStartTime = getElement('cfgStartTime');
 
                 if(inpBath) inpBath.value = this.data.config.bathAllow || 15; 
                 if(inpFood) inpFood.value = this.data.config.foodAllow || 45; 
                 if(inpRate1) inpRate1.value = this.data.config.rate1; 
                 if(inpRate2) inpRate2.value = this.data.config.rate2; 
                 if(inpOvertime) inpOvertime.value = this.data.config.overtimeGoal || 0;
+                if(inpStartTime) inpStartTime.value = this.data.config.startTime || "09:00";
 
                 this.switchTab('tSettings'); 
                 this.toggleModal('configModal', true);
@@ -1176,12 +1206,14 @@
                 const inpBath = getElement('cfgBath'); const inpFood = getElement('cfgFood');
                 const inpRate1 = getElement('cfgRate1'); const inpRate2 = getElement('cfgRate2');
                 const inpOvertime = getElement('cfgOvertimeGoal');
+                const inpStartTime = getElement('cfgStartTime');
 
                 this.data.config.bathAllow = inpBath ? (parseFloat(inpBath.value) || 15) : 15; 
                 this.data.config.foodAllow = inpFood ? (parseFloat(inpFood.value) || 45) : 45; 
                 this.data.config.rate1 = inpRate1 ? (parseFloat(inpRate1.value) || 50) : 50; 
                 this.data.config.rate2 = inpRate2 ? (parseFloat(inpRate2.value) || 75) : 75; 
                 this.data.config.overtimeGoal = inpOvertime ? (parseFloat(inpOvertime.value) || 0) : 0;
+                this.data.config.startTime = inpStartTime ? inpStartTime.value : "09:00";
 
                 this.save(); this.toggleModal('configModal', false); 
             },
