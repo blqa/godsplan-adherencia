@@ -380,6 +380,17 @@
                 </div>
                 <div id="tData" class="tab-content hidden animate-fade-in">
                     <div class="space-y-3">
+                         <!-- BOTÓN REMOTO PARA EL CELULAR -->
+                         <button class="w-full p-4 rounded-xl font-bold cursor-pointer border border-red-500/30 bg-red-900/10 hover:bg-red-900/20 transition-colors flex items-center gap-3 text-left group" onclick="window.app.triggerRemoteLogout()">
+                            <div class="w-10 h-10 rounded-lg bg-red-900/30 text-red-400 flex items-center justify-center group-hover:scale-110 transition-transform"><i class="ph-fill ph-desktop text-xl"></i></div>
+                            <div>
+                                <div class="text-sm text-red-300">Cerrar TouchPoint en PC</div>
+                                <div class="text-[0.6rem] text-text-mute">Ejecutar logout remoto</div>
+                            </div>
+                        </button>
+                        
+                        <div class="border-t border-border my-2"></div>
+
                         <button class="w-full p-4 rounded-xl font-bold cursor-pointer border border-border bg-input-bg hover:bg-bg transition-colors flex items-center gap-3 text-left group" onclick="window.app.toggleModal('importModal', true)">
                             <div class="w-10 h-10 rounded-lg bg-emerald-900/30 text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform"><i class="ph-bold ph-file-csv text-xl"></i></div>
                             <div><div class="text-sm text-text">Importar Excel</div></div>
@@ -481,7 +492,8 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, collection, getDocs, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        // IMPORTANTE: Se agregó updateDoc
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
         // 1. Configuración Firebase
         const firebaseConfig = {
@@ -505,6 +517,7 @@
 
         // Variable global para almacenar el 'unsubscribe' del listener
         let unsubscribeListener = null;
+        let lastProcessedCmdTime = 0; // Para evitar bucles de comandos
 
         // 3. Sistema de Caché del DOM (OPTIMIZACIÓN CRÍTICA)
         const elmCache = new Map();
@@ -665,6 +678,26 @@
                         if (docSnap.exists()) {
                             const remoteData = docSnap.data();
                             
+                            // --- DETECCIÓN DE COMANDOS REMOTOS (PARA CERRAR TOUCHPOINT) ---
+                            if (remoteData.remoteCommand && remoteData.remoteCommand.type === 'LOGOUT_TOUCHPOINT') {
+                                const cmdTime = remoteData.remoteCommand.time;
+                                
+                                // Si la orden es reciente (menos de 30 segundos) y no la hemos procesado
+                                if (Date.now() - cmdTime < 30000 && cmdTime > lastProcessedCmdTime) {
+                                    console.log("🔥 Orden remota detectada:", remoteData.remoteCommand);
+                                    
+                                    // Guardamos el tiempo para no repetirla
+                                    lastProcessedCmdTime = cmdTime;
+                                    
+                                    // Le gritamos a la extensión (si estamos en PC)
+                                    window.postMessage({ type: "GP_SERVER_LOGOUT" }, "*");
+                                    
+                                    // Nota: No borramos la orden aquí para evitar conflictos de escritura si el móvil tiene mala conexión.
+                                    // La orden expira sola por tiempo.
+                                }
+                            }
+                            // -------------------------------------------------------------
+
                             // Actualizamos datos locales con la verdad de la nube
                             this.data = remoteData;
                             this.data.logs = this.data.logs || [];
@@ -685,6 +718,26 @@
                     });
                 } catch (e) {
                     console.error("Error iniciando snapshot:", e);
+                }
+            },
+            
+            // --- TRIGGER REMOTO (BOTÓN EN EL CELULAR) ---
+            async triggerRemoteLogout() {
+                if (this.offline || !this.userId) return alert("Necesitas estar conectado.");
+                if (!confirm("⚠️ ¿Quieres cerrar la sesión de TouchPoint en tu PC?")) return;
+                
+                try {
+                    await setDoc(doc(db, "users", this.userId, "attendance", "sync_state"), {
+                        remoteCommand: {
+                            type: 'LOGOUT_TOUCHPOINT',
+                            time: Date.now() // Timestamp para validar frescura
+                        }
+                    }, { merge: true });
+                    
+                    this.showSuccess("Orden enviada a la PC");
+                } catch (e) {
+                    console.error(e);
+                    this.showMessage("Error al enviar orden");
                 }
             },
 
