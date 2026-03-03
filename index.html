@@ -275,11 +275,19 @@
                 <div class="grid grid-cols-2 gap-2.5 mt-4" id="actionButtons"></div>
             </div>
 
-            <!-- PANEL TOUCHPOINT EXTERNO (NUEVO) -->
+            <!-- PANEL TOUCHPOINT EXTERNO -->
             <div class="bg-card rounded-2xl border border-border py-4 px-4 text-center mb-6 shadow-sm panel-control">
-                <h3 class="text-[0.7rem] uppercase tracking-widest text-text-mute font-extrabold mb-3 flex items-center justify-center gap-1.5">
-                    <i class="ph-bold ph-arrows-left-right text-brand text-base"></i> Control TouchPoint Externo
-                </h3>
+                <!-- Header del Panel con Indicador de Llamada -->
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-[0.7rem] uppercase tracking-widest text-text-mute font-extrabold flex items-center gap-1.5">
+                        <i class="ph-bold ph-arrows-left-right text-brand text-base"></i> TouchPoint
+                    </h3>
+                    <div id="tp-call-indicator" class="px-2 py-1 rounded-md text-[0.6rem] font-bold uppercase tracking-wider bg-bg border border-border text-text-mute flex items-center gap-1.5 transition-all">
+                        <span class="w-1.5 h-1.5 rounded-full bg-zinc-500 block"></span>
+                        Buscando Estado...
+                    </div>
+                </div>
+
                 <div class="grid grid-cols-3 gap-2">
                     <button onclick="window.app.setStatus('AVAILABLE')" class="bg-card text-text-mute border-2 border-emerald-500/40 hover:border-emerald-500 hover:text-emerald-500 hover:bg-emerald-500/10 p-2 rounded-xl font-bold text-[0.75rem] md:text-sm flex flex-col items-center gap-1 transition-all cursor-pointer">
                         <span class="text-xl">🟢</span> Disponible
@@ -591,8 +599,6 @@
 
                 // MÉTODO 1: HEAD REQUEST A HOSTING (Infalible si está hosteado)
                 try {
-                    // Pedimos la cabecera 'date' al propio servidor de hosting.
-                    // Esto evita CORS, Rate Limits y bloqueos de API.
                     const r = await fetch(window.location.href, { method: 'HEAD', cache: "no-store" });
                     const dateHeader = r.headers.get('date');
                     if (dateHeader) {
@@ -613,7 +619,6 @@
                     }
                 } catch (e2) {
                     console.warn("Fallo total de red. Usando reloj local.");
-                    // Fallback silencioso a Local para evitar errores en consola
                     this.isTimeSynced = false;
                     this.timeOffset = 0; 
                     this.updateSyncUI(false);
@@ -671,7 +676,7 @@
                             setTimeout(() => appView.classList.add('animate-fade-in'), 50);
                         }
                         
-                        // 1. Iniciar listener en tiempo real (Reemplazo de load())
+                        // 1. Iniciar listener en tiempo real
                         this.listenToChanges(); 
 
                     } else {
@@ -696,45 +701,30 @@
                 });
             },
 
-            // --- REAL TIME LISTENER (NUEVO) ---
+            // --- REAL TIME LISTENER ---
             listenToChanges() {
                 if (this.offline || !this.userId) return;
                 
-                // Si ya hay un listener, lo detenemos para no duplicar
                 if (unsubscribeListener) unsubscribeListener();
 
-                // ESCUCHA EN TIEMPO REAL (PUSH)
                 try {
                     unsubscribeListener = onSnapshot(doc(db, "users", this.userId, "attendance", "sync_state"), (docSnap) => {
                         if (docSnap.exists()) {
                             const remoteData = docSnap.data();
                             
-                            // --- DETECCIÓN DE COMANDOS REMOTOS (PARA CERRAR TOUCHPOINT) ---
                             if (remoteData.remoteCommand && remoteData.remoteCommand.type === 'LOGOUT_TOUCHPOINT') {
                                 const cmdTime = remoteData.remoteCommand.time;
-                                
-                                // Si la orden es reciente (menos de 30 segundos) y no la hemos procesado
                                 if (Date.now() - cmdTime < 30000 && cmdTime > lastProcessedCmdTime) {
                                     console.log("🔥 Orden remota detectada:", remoteData.remoteCommand);
-                                    
-                                    // Guardamos el tiempo para no repetirla
                                     lastProcessedCmdTime = cmdTime;
-                                    
-                                    // Le gritamos a la extensión (si estamos en PC)
                                     window.postMessage({ type: "GP_SERVER_LOGOUT" }, "*");
-                                    
-                                    // Nota: No borramos la orden aquí para evitar conflictos de escritura si el móvil tiene mala conexión.
-                                    // La orden expira sola por tiempo.
                                 }
                             }
-                            // -------------------------------------------------------------
 
-                            // Actualizamos datos locales con la verdad de la nube
                             this.data = remoteData;
                             this.data.logs = this.data.logs || [];
                             this.data.config = this.data.config || { rate1: 50, rate2: 75, bathAllow: 15, foodAllow: 45, overtimeGoal: 0, startTime: "09:00" };
                             
-                            // SANITIZACIÓN: Si activeShift existe pero tiene start corrupto, lo corregimos
                             if (this.data.activeShift && !Number.isFinite(this.data.activeShift.start)) {
                                 console.warn("Detectado turno corrupto, reparando...");
                                 this.data.activeShift.start = Date.now();
@@ -745,14 +735,13 @@
                         }
                     }, (error) => {
                         console.error("Error en listener:", error);
-                        // Opcional: Manejar desconexión visual
                     });
                 } catch (e) {
                     console.error("Error iniciando snapshot:", e);
                 }
             },
             
-            // --- TRIGGER REMOTO (BOTÓN EN EL CELULAR) ---
+            // --- TRIGGER REMOTO ---
             async triggerRemoteLogout() {
                 if (this.offline || !this.userId) return alert("Necesitas estar conectado.");
                 if (!confirm("⚠️ ¿Quieres cerrar la sesión de TouchPoint en tu PC?")) return;
@@ -837,12 +826,9 @@
             },
 
             // --- CORE ---
-            updateRealClockUI() { setText('realClockTime', formatters.clock.format(new Date(this.getNow()))); }, // Mostrar hora sincronizada
+            updateRealClockUI() { setText('realClockTime', formatters.clock.format(new Date(this.getNow()))); },
             
-            getNow() { 
-                // CRÍTICO: Usar el offset calculado para la "Verdadera Hora"
-                return Date.now() + (this.timeOffset || 0); 
-            },
+            getNow() { return Date.now() + (this.timeOffset || 0); },
             
             goOffline() { this.offline = true; this.loadLocal(); },
             
@@ -857,13 +843,11 @@
             async save() {
                 localStorage.setItem('godsPlanData', JSON.stringify(this.data));
                 if (!this.offline && this.userId) {
-                    // Al guardar, onSnapshot se disparará, pero eso está bien, asegura consistencia
                     await setDoc(doc(db, "users", this.userId, "attendance", "sync_state"), this.data, { merge: true });
                 }
             },
             
             syncData() { 
-                // Reiniciar el listener fuerza una actualización fresca
                 this.listenToChanges(); 
                 this.showSuccess("Sincronizando..."); 
             },
@@ -907,9 +891,7 @@
                     setText('limFood', fl);
                     
                     if(startEl && s.start) {
-                        // FIX: Validar s.start
                         const safeStart = Number(s.start) ? new Date(s.start) : new Date();
-                        // MODIFICADO: Ahora muestra el icono y usa innerHTML para permitir edición
                         startEl.innerHTML = `ENTRADA: ${formatters.shortTime.format(safeStart)} <i class="ph-bold ph-pencil-simple text-brand text-[1.1em] ml-1"></i>`;
                         startEl.style.display = 'flex';
                     }
@@ -925,10 +907,8 @@
 
                     if (this.timer) clearInterval(this.timer);
                     
-                    // Función optimizada de intervalo (usa caché de elementos)
                     this.timer = setInterval(() => {
                         const now = this.getNow();
-                        // SAFEGUARDS: Forzar conversión a número para evitar NaN
                         const safeStart = Number(s.start) || now; 
                         let totalPauseAccumulated = (Number(s.breaks?.pause) || 0) * 60000;
                         let currentPauseDuration = 0;
@@ -943,7 +923,6 @@
                         }
 
                         let displayTime = (now - safeStart) - totalPauseAccumulated - currentPauseDuration;
-                        // ULTIMATE SAFETY: Si da NaN o negativo por error de reloj, forzar 0
                         if (isNaN(displayTime) || displayTime < 0) displayTime = 0;
                         
                         setText('clockDisplay', this.msToTime(displayTime));
@@ -990,7 +969,6 @@
                 return `${Math.floor(m).toString().padStart(2, '0')}:${Math.floor((m % 1) * 60).toString().padStart(2, '0')}`; 
             },
             msToTime(ms) { 
-                // CRITICAL FIX: Retornar 0 si es NaN para evitar NaN:NaN:NaN
                 if (!Number.isFinite(ms)) return "0:00:00";
                 const s = Math.floor(ms / 1000), m = Math.floor(s / 60), h = Math.floor(m / 60); 
                 return `${h}:${(m % 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`; 
@@ -998,16 +976,14 @@
             getWeek(d) { d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7)); var y = new Date(Date.UTC(d.getUTCFullYear(), 0, 1)); return Math.ceil((((d - y) / 86400000) + 1) / 7); },
             calcHours(i, o) { if (!i || !o) return 0; const [h1, m1] = i.split(':'), [h2, m2] = o.split(':'); const d = ((h2 * 60 + +m2) - (h1 * 60 + +m1)); return d < 0 ? -1 : d; },
             
-            // LÓGICA RETARDOS MODIFICADA
             calcStats(logs) { 
                 let t = 0, w = 0, f = 0, l = 0; // l = late
-                const startLimit = this.data.config.startTime || "09:00"; // Default 09:00
+                const startLimit = this.data.config.startTime || "09:00";
 
                 logs.forEach(log => { 
                     if (log.type === 'Laboral') {
                         t += 480;
                         w += (log.hours - (log.disconnection || 0));
-                        // Check Late
                         if (log.in && log.in > startLimit) l++;
                     } else if (log.type === 'Falta') {
                         t += 480;
@@ -1023,7 +999,6 @@
             openTimerEdit(type) {
                 if (!this.data.activeShift) return;
                 this.editingTimerType = type;
-                // Safe access
                 let currentTotal = Number(this.data.activeShift.breaks?.[type]) || 0;
                 
                 if (this.data.activeShift.breakStart && this.data.activeShift.breakType === type) {
@@ -1031,11 +1006,10 @@
                 }
                 setText('timerEditTitle', type === 'bathroom' ? 'Baño' : 'Comida');
                 
-                // Reset to duration mode
                 setText('timerEditDesc', `Ingresa el tiempo acumulado para ${type === 'bathroom' ? 'Baño' : 'Comida'}.`);
                 const inp = getElement('inpTimerEdit');
                 if(inp) {
-                    inp.type = 'text'; // Mode Duration
+                    inp.type = 'text';
                     const m = Math.floor(currentTotal);
                     const s = Math.floor((currentTotal % 1) * 60);
                     inp.value = `${m}:${s.toString().padStart(2, '0')}`;
@@ -1045,7 +1019,6 @@
                 if(inp) setTimeout(() => inp.focus(), 100);
             },
             
-            // NUEVO: Función para abrir modal de hora de entrada
             openStartTimeEdit() {
                 if (!this.data.activeShift) return;
                 this.editingTimerType = 'start';
@@ -1059,7 +1032,7 @@
 
                 const inp = getElement('inpTimerEdit');
                 if(inp) {
-                    inp.type = 'time'; // Change to time picker
+                    inp.type = 'time';
                     inp.value = `${h}:${m}`;
                 }
                 this.toggleModal('timerEditModal', true);
@@ -1068,13 +1041,11 @@
             saveTimerEdit() {
                 if (!this.editingTimerType || !this.data.activeShift) return;
                 
-                // NUEVO: Lógica específica para editar hora de inicio
                 if (this.editingTimerType === 'start') {
                     const inp = getElement('inpTimerEdit');
                     if (!inp || !inp.value) return;
                     const [h, m] = inp.value.split(':').map(Number);
                     
-                    // Modificamos solo la hora del inicio actual, mantenemos la fecha
                     const newStart = new Date(this.data.activeShift.start);
                     newStart.setHours(h, m, 0, 0);
                     
@@ -1085,7 +1056,6 @@
                     return;
                 }
                 
-                // Lógica existente para descansos
                 const inp = getElement('inpTimerEdit');
                 const valStr = inp ? inp.value.trim() : '0';
                 let newVal = 0;
@@ -1146,7 +1116,6 @@
                 const config = this.data.config || {}; 
                 const disc = Math.max(0, b - (config.bathAllow || 15)) + Math.max(0, f - (config.foodAllow || 45));
                 
-                // Usar formateadores cacheados
                 const safeStart = Number(s.start) ? new Date(s.start) : new Date();
                 const logDate = formatters.dateISO.format(safeStart);
                 const logIn = formatters.shortTime.format(safeStart);
@@ -1175,7 +1144,6 @@
                 if (wRes.bal > 0) pay = (he <= 12) ? he * (config.rate1 || 50) : (12 * (config.rate1 || 50)) + ((he - 12) * (config.rate1 || 50));
                 setText('weekPay', `$${Math.round(pay)}`);
 
-                // --- LÓGICA META DE HORAS EXTRAS (NUEVO) ---
                 const otGoal = config.overtimeGoal || 0;
                 const otContainer = getElement('overtimeGoalContainer');
                 if (otGoal > 0) {
@@ -1191,7 +1159,6 @@
                 } else {
                     if(otContainer) otContainer.classList.add('hidden');
                 }
-                // -------------------------------------------
 
                 const isQ1 = d.getDate() <= 15;
                 setText('qName', isQ1 ? 'Q1' : 'Q2');
@@ -1200,7 +1167,6 @@
                 setText('qTarget', this.fmt(qRes.target));
                 setText('qWorked', this.fmt(qRes.worked));
                 this.setBadge('qBalance', qRes.bal);
-                // RETARDOS
                 setText('qLate', qRes.late);
                 setText('qFails', qRes.fails);
 
@@ -1260,7 +1226,6 @@
             changeWeek(n) { this.date.setDate(this.date.getDate() + (n * 7)); this.render(); },
             goToday() { this.date = new Date(); this.render(); },
             
-            // Unificando modales
             toggleModal(id, show) {
                 const m = getElement(id);
                 if(m) {
@@ -1413,7 +1378,6 @@
                             json.logs.forEach(l => { if (!this.data.logs.find(x => x.id === l.id)) { this.data.logs.push(l); count++; } });
                             if(json.config) this.data.config = { ...this.data.config, ...json.config };
                             
-                            // NUEVO: Restaurar turno activo si existe en el backup y no hay uno actual
                             if (json.activeShift && !this.data.activeShift) {
                                 this.data.activeShift = json.activeShift;
                             }
@@ -1429,15 +1393,31 @@
             exportBackup() { const a = document.createElement('a'); a.href = 'data:application/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(this.data)); a.download = 'backup.json'; a.click(); }
         };
 
-        // Event Listener para extensión externa (si existe)
+        // Escucha eventos desde la Web Bridge (Extensión) o Mensajes de PC
         window.addEventListener("message", (event) => {
-            if (event.data.type !== "GODSPLAN_COMMAND") return;
-            const action = event.data.action;
-            switch(action) {
-                case 'RESUME_WORK': window.app.data.activeShift ? window.app.stopBreak() : window.app.clockIn(); break;
-                case 'START_BREAK_FOOD': if (!window.app.data.activeShift) window.app.clockIn(); window.app.startBreak('food'); break;
-                case 'START_BREAK_BATH': if (!window.app.data.activeShift) window.app.clockIn(); window.app.startBreak('bathroom'); break;
-                case 'END_SHIFT': if (window.app.data.activeShift) window.app.finishShiftReal(); break;
+            // 1. Manejo de Comandos Externos
+            if (event.data.type === "GODSPLAN_COMMAND") {
+                const action = event.data.action;
+                switch(action) {
+                    case 'RESUME_WORK': window.app.data.activeShift ? window.app.stopBreak() : window.app.clockIn(); break;
+                    case 'START_BREAK_FOOD': if (!window.app.data.activeShift) window.app.clockIn(); window.app.startBreak('food'); break;
+                    case 'START_BREAK_BATH': if (!window.app.data.activeShift) window.app.clockIn(); window.app.startBreak('bathroom'); break;
+                    case 'END_SHIFT': if (window.app.data.activeShift) window.app.finishShiftReal(); break;
+                }
+            }
+            
+            // 2. NUEVO: Cambio en el Indicador de Llamadas desde TouchPoint
+            if (event.data.type === 'TP_CALL_UPDATE') {
+                const indicator = document.getElementById('tp-call-indicator');
+                if (indicator) {
+                    if (event.data.isActive) {
+                        indicator.className = "px-2 py-1 rounded-md text-[0.65rem] font-bold uppercase tracking-wider bg-red-900/30 border border-red-900/50 text-red-400 flex items-center gap-1.5 transition-colors animate-pulse-custom";
+                        indicator.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-red-500 block"></span> En Llamada`;
+                    } else {
+                        indicator.className = "px-2 py-1 rounded-md text-[0.65rem] font-bold uppercase tracking-wider bg-emerald-900/30 border border-emerald-900/50 text-emerald-400 flex items-center gap-1.5 transition-colors";
+                        indicator.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 block"></span> Libre`;
+                    }
+                }
             }
         });
 
