@@ -275,6 +275,24 @@
                 <div class="grid grid-cols-2 gap-2.5 mt-4" id="actionButtons"></div>
             </div>
 
+            <!-- PANEL TOUCHPOINT EXTERNO (NUEVO) -->
+            <div class="bg-card rounded-2xl border border-border py-4 px-4 text-center mb-6 shadow-sm panel-control">
+                <h3 class="text-[0.7rem] uppercase tracking-widest text-text-mute font-extrabold mb-3 flex items-center justify-center gap-1.5">
+                    <i class="ph-bold ph-arrows-left-right text-brand text-base"></i> Control TouchPoint Externo
+                </h3>
+                <div class="grid grid-cols-3 gap-2">
+                    <button onclick="window.app.setStatus('AVAILABLE')" class="bg-card text-text-mute border-2 border-emerald-500/40 hover:border-emerald-500 hover:text-emerald-500 hover:bg-emerald-500/10 p-2 rounded-xl font-bold text-[0.75rem] md:text-sm flex flex-col items-center gap-1 transition-all cursor-pointer">
+                        <span class="text-xl">🟢</span> Disponible
+                    </button>
+                    <button onclick="window.app.setStatus('LUNCH')" class="bg-card text-text-mute border-2 border-amber-500/40 hover:border-amber-500 hover:text-amber-500 hover:bg-amber-500/10 p-2 rounded-xl font-bold text-[0.75rem] md:text-sm flex flex-col items-center gap-1 transition-all cursor-pointer">
+                        <span class="text-xl">🍕</span> Comida
+                    </button>
+                    <button onclick="window.app.setStatus('BATH')" class="bg-card text-text-mute border-2 border-blue-500/40 hover:border-blue-500 hover:text-blue-500 hover:bg-blue-500/10 p-2 rounded-xl font-bold text-[0.75rem] md:text-sm flex flex-col items-center gap-1 transition-all cursor-pointer">
+                        <span class="text-xl">🚽</span> Baño / Reposo
+                    </button>
+                </div>
+            </div>
+
             <!-- KPIs -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <!-- KPI SEMANA -->
@@ -543,6 +561,19 @@
             data: { logs: [], config: { rate1: 50, rate2: 75, bathAllow: 15, foodAllow: 45, overtimeGoal: 0, startTime: "09:00" }, activeShift: null },
             userId: null, offline: false, editingId: null, date: new Date(), timer: null, processing: false, 
             editingTimerType: null, timeOffset: 0, isRegistering: false, isTimeSynced: false,
+
+            // --- CONTROL EXTERNO TOUCHPOINT ---
+            setStatus(statusName) {
+                window.postMessage({
+                    type: 'CHANGE_TP_STATUS',
+                    status: statusName
+                }, "*");
+                console.log("Orden enviada a TouchPoint:", statusName);
+                this.showSuccess("Cambiando estado a: " + statusName);
+            },
+            cambiarEstado(nombreEstado) {
+                this.setStatus(nombreEstado);
+            },
 
             // --- SISTEMA DE TIEMPO REAL ROBUSTO (FIX DEFINITIVO) ---
             async syncServerTime() {
